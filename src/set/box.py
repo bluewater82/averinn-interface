@@ -63,17 +63,19 @@ class Box(Set, ABC):
         intDim: int = len(self.__arrayLow__)
         return intDim
 
-    def linearMap(self, matW: npt.ArrayLike) -> Set:
+    def linearMap(self, matLow: npt.ArrayLike, matHigh: npt.ArrayLike = None) -> Set:
         """
-        Linear mapping of the box set
-        :param matW: a two-dimensional array for a weight matrix
-        :type matW: npt.ArrayLike
-        :return: (objSetLinear -> Box) an instance of Box representing WX,
+        Linear mapping of a set (matHigh will be used for IntervalMatrix)
+        :param matLow: a two-dimensional array for a weight matrix
+        :type matLow: npt.ArrayLike
+        :param matHigh: a two-dimensional array for a weight matrix
+        :type matHigh: npt.ArrayLike
+        :return: (objSetLinear -> Set) an instance of Set representing WX,
                 where X is a self
         """
         # WX
-        arrayWXLow: npt.ArrayLike = np.array(np.matmul(matW, self.__arrayLow__))
-        arrayWXHigh: npt.ArrayLike = np.array(np.matmul(matW, self.__arrayHigh__))
+        arrayWXLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
+        arrayWXHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
 
         # Linear map of self
         objSetLinear: Set = Box(arrayWXLow, arrayWXHigh)
@@ -81,22 +83,27 @@ class Box(Set, ABC):
         # Return Linear set
         return objSetLinear
 
-    def affineMap(self, matW: npt.ArrayLike, arrayB: npt.ArrayLike) -> Set:
+    def affineMap(self, matLow: npt.ArrayLike, arrayLow: npt.ArrayLike,
+                  matHigh: npt.ArrayLike = None, arrayHigh: npt.ArrayLike = None) -> 'Set':
         """
-        Affine mapping of the box set
-        :param matW: a two-dimensional array for a weight matrix
-        :type matW: npt.ArrayLike
-        :param arrayB: a one dimensional array
-        :type arrayB: npt.ArrayLike
-        :return: (objSetAffine -> Box) an instance of box representing WX+b,
+        Affine mapping of a set (matHigh and arrayHigh will be used for IntervalMatrix)
+        :param matLow: a two-dimensional array for a weight matrix
+        :type matLow: npt.ArrayLike
+        :param matHigh: a two-dimensional array for a weight matrix
+        :type matHigh: npt.ArrayLike
+        :param arrayLow: a one dimensional array
+        :type arrayLow: npt.ArrayLike
+        :param arrayHigh: a one dimensional array
+        :type arrayHigh: npt.ArrayLike
+        :return: (objSetAffine -> Set) an instance of Set representing WX+b,
         """
         # WX
-        arrayWXLow: npt.ArrayLike = np.array(np.matmul(matW, self.__arrayLow__))
-        arrayWXHigh: npt.ArrayLike = np.array(np.matmul(matW, self.__arrayHigh__))
+        arrayWXLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
+        arrayWXHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
 
         # WX + b
-        arrayAffineLow = arrayWXLow + arrayB
-        arrayAffineHigh = arrayWXHigh + arrayB
+        arrayAffineLow = arrayWXLow + arrayLow
+        arrayAffineHigh = arrayWXHigh + arrayLow
 
         # Affine map of self
         objSetAffine: Set = Box(arrayAffineLow, arrayAffineHigh)

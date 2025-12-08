@@ -40,30 +40,30 @@ if len(sys.argv) < 2 or len(sys.argv) > 2:
     sys.exit(0)
 inifile = configparser.ConfigParser()
 inifile.read(sys.argv[1], 'UTF-8')
-# In config.ini, please specify type of neural network file format
+# In nncs-config.ini, please specify type of neural network file format
 # "SHERLOCK"/"ONNX"/"NNET"/"ISHERLOCK"
 nnformat: str = json.loads(inifile.get('settings', 'nnformat'))
-# In config.ini, please specify correct path of neural network
+# In nncs-config.ini, please specify correct path of neural network
 nnpath: str = json.loads(inifile.get('settings', 'nnpath'))
-# In config.ini, please specify correct path of spec if needed, "NONE" otherwise
+# In nncs-config.ini, please specify correct path of spec if needed, "NONE" otherwise
 specpath: str = json.loads(inifile.get('settings', 'specpath'))
 # Problem type "REACH" or "SAFETY"
 probTypeC: str = json.loads(inifile.get('settings', 'probType'))
-# In config.ini, please specify problem type ("REACH"/"SAFETY")
-# In config.ini, please use "YES" if you want to abstract, "NO" otherwise
+# In nncs-config.ini, please specify problem type ("REACH"/"SAFETY")
+# In nncs-config.ini, please use "YES" if you want to abstract, "NO" otherwise
 absRequired: str = json.loads(inifile.get('settings', 'absRequired'))
-# In config.ini, specify  abstraction type. Since the tool supports only
+# In nncs-config.ini, specify  abstraction type. Since the tool supports only
 # interval abstraction, use "INTERVAL"
 absTypeC: str = json.loads(inifile.get('settings', 'absType'))
-# In config.ini, specify number of abstract nodes needed at hidden layers
+# In nncs-config.ini, specify number of abstract nodes needed at hidden layers
 numOfAbsNodes: int = json.loads(inifile.get('settings', 'numOfAbsNodes'))
-# In config.ini, specify solver. Since the tool uses only
+# In nncs-config.ini, specify solver. Since the tool uses only
 # Gurobi solver, use "Gurobi"
 solverTypeC: str = json.loads(inifile.get('settings', 'solverType'))
-# In config.ini, specify technique. The tool supports two techniques MILP/PROPAGATION.
+# In nncs-config.ini, specify technique. The tool supports two techniques MILP/PROPAGATION.
 # Use one of them like "MILP" or "PROPAGATION"
 techniqueC: str = json.loads(inifile.get('settings', 'technique'))
-# In config.ini, specify whether relu will be applied on the last layer
+# In nncs-config.ini, specify whether relu will be applied on the last layer
 # Use "YES" or "NO"
 lastReluC: str = json.loads(inifile.get('settings', 'lastRelu'))
 # In config,ini, specify partition strategy, since only one strategy is
@@ -191,11 +191,17 @@ for i in range(K):
         objTechnique = Milp(objGNNUse, objStateSet, outputConstr, solverType, lastRelu)
         listSets: List[Set] = objTechnique.reachSet()
         objInputSet = SetUTS.rangeOfSets(listSets)
-        objStateSet = objStateSet.linearMap(objDtDyn.A)
-        if (objDtDyn.B is not None) and (objDtDyn.C is None):
-            objStateSet = objStateSet.minkowskiSum(objInputSet.linearMap(objDtDyn.B))
+        if (objDtDyn.B is None) and (objDtDyn.C is None):
+            objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
+        elif (objDtDyn.B is None) and (objDtDyn.C is not None):
+            objStateSet = objStateSet.affineMap(objDtDyn.A, objDtDyn.C, objDtDyn.A, objDtDyn.C)
+        elif (objDtDyn.B is not None) and (objDtDyn.C is None):
+            objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
+            objStateSet = objStateSet.minkowskiSum(objInputSet.linearMap(objDtDyn.B, objDtDyn.B))
         elif (objDtDyn.B is not None) and (objDtDyn.C is not None):
-            objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C))
+            objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
+            objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C,
+                                                                         objDtDyn.B, objDtDyn.C))
     elif techniqueType == TechniqueType.PROPAGATION:
         if absRequired == "YES":
             objStateSet = SetUTS.toIntervalStarSet(objStateSet)
@@ -209,11 +215,18 @@ for i in range(K):
             objInputSet = SetUTS.toIntervalStarSet(objInputSet)
         else:
             objInputSet = SetUTS.toStarSet(objInputSet)
-        objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
-        if (objDtDyn.B is not None) and (objDtDyn.C is None):
-            objStateSet = objStateSet.minkowskiSum(objInputSet.linearMap(objDtDyn.B, objDtDyn.B))
+        if (objDtDyn.B is None) and (objDtDyn.C is None):
+            objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
+        elif (objDtDyn.B is None) and (objDtDyn.C is not None):
+            objStateSet = objStateSet.affineMap(objDtDyn.A, objDtDyn.C, objDtDyn.A, objDtDyn.C)
+        elif (objDtDyn.B is not None) and (objDtDyn.C is None):
+            objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
+            objInputSet = objInputSet.linearMap(objDtDyn.B, objDtDyn.B)
+            objStateSet = objStateSet.minkowskiSum(objInputSet)
         elif (objDtDyn.B is not None) and (objDtDyn.C is not None):
-            objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C, objDtDyn.B, objDtDyn.C))
+            objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
+            objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C,
+                                                                         objDtDyn.B, objDtDyn.C))
 
 if probType == ProbType.REACH:
     Log.message("Reach Set \n")

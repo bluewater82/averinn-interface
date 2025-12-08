@@ -258,12 +258,12 @@ class IntervalStarSet(Set, ABC):
         two interval star sets
         """
         # Horizontal concatenation of vertices of both interval star sets
-        matBasisVLow = np.concatenate((self.__objIMBasisV__.getMatLow(), objISS.getMatBasisV().getMatLow()[:, 1:]), axis=1)
-        matBasisVHigh = np.concatenate((self.__objIMBasisV__.getMatHigh(), objISS.getMatBasisV().getMatHigh()[:, 1:]), axis=1)
+        matBasisVLow = np.concatenate((self.__objIMBasisV__.getMatLow(), objISS.getIMatBasisV().getMatLow()[:, 1:]), axis=1)
+        matBasisVHigh = np.concatenate((self.__objIMBasisV__.getMatHigh(), objISS.getIMatBasisV().getMatHigh()[:, 1:]), axis=1)
 
         # Add centers of both interval star sets
-        matBasisVLow[:, 0] = matBasisVLow[:, 0] + objISS.getMatBasisV().getMatLow()[:, 0]
-        matBasisVHigh[:, 0] = matBasisVHigh[:, 0] + objISS.getMatBasisV().getMatHigh()[:, 0]
+        matBasisVLow[:, 0] = matBasisVLow[:, 0] + objISS.getIMatBasisV().getMatLow()[:, 0]
+        matBasisVHigh[:, 0] = matBasisVHigh[:, 0] + objISS.getIMatBasisV().getMatHigh()[:, 0]
 
         # Construct Basis matrix for minkowski sm
         imatBasisSumV: IntervalMatrix = IntervalMatrix(matBasisVLow, matBasisVHigh)

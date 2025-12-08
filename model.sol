@@ -1,11 +1,6 @@
-# Objective value = 4.75
-x_1_1 2
-q_1_1 0
-x_1_2 2.75
-q_1_2 0
-x_2_1 0
-q_2_1 1
-x_2_2 7.5
-q_2_2 0
-x_3_1 4.75
-q_3_1 0
+# Objective value = 0.75
+x_0 7
+x_1 0.75
+alpha_0 -1
+alpha_1 1
+alpha_2 -1

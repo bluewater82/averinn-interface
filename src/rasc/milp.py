@@ -66,7 +66,7 @@ class Milp(Technique, ABC):
         arrayInput: npt.ArrayLike = self.__objSet__.toAbsolute()
         dictM: Dict[int, Dict[int, DataType.RealType]] = GNNUTS.getM(objAGNN, arrayInput, self.__lastRelu__)
         # Display dictM
-        Log.message("Upper Bound for each neuron\n")
+        Log.message("Upper Bound (big-M value) for each neuron\n")
         SetUTS.displayDictOfDictOfValues(dictM)
         # Reach set
         listSets: List[Set] = self.__objSet__.getSameSignPartition()
@@ -98,7 +98,7 @@ class Milp(Technique, ABC):
             if self.__solverType__ == SolverType.Gurobi:
                 objSolver: Solver = Gurobi(grbModel, dictVarsX)
                 if isFirst:
-                    Log.message("MILP Encoding for the first if the set is splitted\n")
+                    Log.message("MILP Encoding for the first set if the input set is splitted\n")
                     Log.message("Only initial set encoding will be changed for other sets\n")
                     Log.message(SetUTS.displayModel(grbModel))
                     isFirst = False

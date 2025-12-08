@@ -12,56 +12,30 @@ Specification
         [-1.  0.]      -10.0
         [ 0. -1.]      -1.0
 Interation0
-Upper Bound for each neuron
-         1 : {1: 2.0, 2: 2.0}
-         2 : {1: 5.0, 2: 6.0}
-         3 : {1: 9.0}
-MILP Encoding for the first if the set is splitted
-Only initial set encoding will be changed for other sets
-          x_1_1*1.0 >= 1.0
-          x_1_1*1.0 <= 2.0
-          x_1_2*1.0 >= 1.0
-          x_1_2*1.0 <= 2.0
-          x_1_1*1.0 + x_1_2*-1.0 + x_2_1*-1.0 <= 1.0
-          x_1_1*1.0 + x_1_2*-1.0 + x_2_1*-1.0 + q_2_1*5.0 >= 1.0
-          x_2_1*1.0 >= 0.0
-          x_2_1*-1.0 + q_2_1*-5.0 >= -5.0
-          x_1_1*0.5 + x_1_2*2.0 + x_2_2*-1.0 <= -1.0
-          x_1_1*0.5 + x_1_2*2.0 + x_2_2*-1.0 + q_2_2*6.0 >= -1.0
-          x_2_2*1.0 >= 0.0
-          x_2_2*-1.0 + q_2_2*-6.0 >= -6.0
-          x_2_1*1.0 + x_2_2*0.5 + x_3_1*-1.0 <= -1.0
-          x_2_1*1.0 + x_2_2*0.5 + x_3_1*-1.0 >= -1.0
+Number of Interval Stars after each layer
+       After Layer         Number of Interval Stars
+           2                       2
+           3                       2
 Interation1
-Upper Bound for each neuron
-         1 : {1: 4.0, 2: 4.0}
-         2 : {1: 9.0, 2: 11.0}
-         3 : {1: 15.5}
-MILP Encoding for the first if the set is splitted
-Only initial set encoding will be changed for other sets
-          x_1_1*1.0 >= 2.0
-          x_1_1*1.0 <= 4.0
-          x_1_2*1.0 >= 2.75
-          x_1_2*1.0 <= 4.0
-          x_1_1*1.0 + x_1_2*-1.0 + x_2_1*-1.0 <= 1.0
-          x_1_1*1.0 + x_1_2*-1.0 + x_2_1*-1.0 + q_2_1*9.0 >= 1.0
-          x_2_1*1.0 >= 0.0
-          x_2_1*-1.0 + q_2_1*-9.0 >= -9.0
-          x_1_1*0.5 + x_1_2*2.0 + x_2_2*-1.0 <= -1.0
-          x_1_1*0.5 + x_1_2*2.0 + x_2_2*-1.0 + q_2_2*11.0 >= -1.0
-          x_2_2*1.0 >= 0.0
-          x_2_2*-1.0 + q_2_2*-11.0 >= -11.0
-          x_2_1*1.0 + x_2_2*0.5 + x_3_1*-1.0 <= -1.0
-          x_2_1*1.0 + x_2_2*0.5 + x_3_1*-1.0 >= -1.0
+Number of Interval Stars after each layer
+       After Layer         Number of Interval Stars
+           2                       2
+           3                       2
 Reach Set 
-       Lower: [4.75 4.  ]
-       Upper: [8.  6.5]
+       Lower: [3.75 0.75]
+       Upper: [9.   9.75]
 Safety Checking 
        MILP Encoding
-          x_0*1.0 >= 4.75
-          x_0*1.0 <= 8.0
-          x_1*1.0 >= 4.0
-          x_1*1.0 <= 6.5
+          x_0*1.0 + alpha_0*-1.0 + alpha_1*-1.625 >= 6.375
+          x_1*1.0 + alpha_0*-1.0 + alpha_1*1.625 + alpha_2*-1.875 >= 5.25
+          x_0*1.0 + alpha_0*-1.0 + alpha_1*-1.625 <= 6.375
+          x_1*1.0 + alpha_0*-1.0 + alpha_1*1.625 + alpha_2*-1.875 <= 5.25
+          alpha_0*1.0 <= 1.0
+          alpha_0*-1.0 <= 1.0
+          alpha_1*1.0 <= 1.0
+          alpha_1*-1.0 <= 1.0
+          alpha_2*1.0 <= 1.0
+          alpha_2*-1.0 <= 1.0
           x_0*-1.0 <= -10.0
           x_1*-1.0 <= -1.0
 Safety Status: Safe 
