@@ -1,5 +1,13 @@
-# Objective value = 1
-X_1 1
-X_2 1
-alpha_1 -1
-alpha_2 -1
+# Objective value = -4
+x_1_1 2
+q_1_1 0
+x_1_2 2
+q_1_2 0
+x_2_1 0
+q_2_1 1
+x_2_2 5
+q_2_2 0
+x_3_1 3.5
+q_3_1 0
+x_3_2 -4
+q_3_2 0

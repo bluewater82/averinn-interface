@@ -11,118 +11,28 @@ Specification
         Property 1
         [-1.  0.]      -10.0
         [ 0. -1.]      -10.0
-       Lower Matrices and Biases
-        L2 to L1                              L3 to L2                              
-       1:[0.5, -1.0]        -1.0            1:[0.5]        1.0
-       2:['-', '-']        -            2:[-1.0]        1.0
-       Upper Matrices and Biases
-        L2 to L1                              L3 to L2                              
-       1:[1.0, 1.5]        1.0            1:[1.0]        1.0
-       2:['-', '-']        -            2:[0.0]        1.0
-Number of Interval Stars after each layer
-Initial set
-Lower Center (CLow)
-[1.5 1.5]
-Upper Center (CHigh)
-[1.5 1.5]
-Lower Vertices (VLow)
-[[0.5 0. ]
- [0.  0.5]]
-Upper Vertices (VHigh)
-[[0.5 0. ]
- [0.  0.5]]
-Predicate (A*alpha <= B, Matrix A)
-[[ 1.  0.]
- [-1.  0.]
- [ 0.  1.]
- [ 0. -1.]]
-Predicate Constant (B)
-[1 1 1 1]
-       After Layer         Number of Interval Stars
-           2                       2
-Set 1
-Lower Center (CLow)
-[-1.75]
-Upper Center (CHigh)
-[4.75]
-Lower Vertices (VLow)
-[[ 0.25 -0.5 ]]
-Upper Vertices (VHigh)
-[[0.5  0.75]]
-Predicate (A*alpha <= B, Matrix A)
-[[ 1.    0.  ]
- [-1.    0.  ]
- [ 0.    1.  ]
- [ 0.   -1.  ]
- [-0.5  -0.75]]
-Predicate Constant (B)
-[1.   1.   1.   1.   4.75]
-Set 2
-Lower Center (CLow)
-[0.]
-Upper Center (CHigh)
-[0.]
-Lower Vertices (VLow)
-[[0. 0.]]
-Upper Vertices (VHigh)
-[[0. 0.]]
-Predicate (A*alpha <= B, Matrix A)
-[[ 1.    0.  ]
- [-1.    0.  ]
- [ 0.    1.  ]
- [ 0.   -1.  ]
- [ 0.25 -0.5 ]]
-Predicate Constant (B)
-[1.   1.   1.   1.   1.75]
-       After Layer         Number of Interval Stars
-           3                       2
-Set 1
-Lower Center (CLow)
-[-2.5 -8.5]
-Upper Center (CHigh)
-[10.5  4.5]
-Lower Vertices (VLow)
-[[ 0.25 -1.  ]
- [-1.   -1.5 ]]
-Upper Vertices (VHigh)
-[[1.  1.5]
- [0.  1. ]]
-Predicate (A*alpha <= B, Matrix A)
-[[ 1.    0.  ]
- [-1.    0.  ]
- [ 0.    1.  ]
- [ 0.   -1.  ]
- [-0.5  -0.75]]
-Predicate Constant (B)
-[1.   1.   1.   1.   4.75]
-Set 2
-Lower Center (CLow)
-[1. 1.]
-Upper Center (CHigh)
-[1. 1.]
-Lower Vertices (VLow)
-[[ 0.  0.]
- [-0. -0.]]
-Upper Vertices (VHigh)
-[[ 0.  0.]
- [-0. -0.]]
-Predicate (A*alpha <= B, Matrix A)
-[[ 1.    0.  ]
- [-1.    0.  ]
- [ 0.    1.  ]
- [ 0.   -1.  ]
- [ 0.25 -0.5 ]]
-Predicate Constant (B)
-[1.   1.   1.   1.   1.75]
+Upper Bound (big-M value) for each neuron
+         1 : {1: 2.0, 2: 2.0}
+         2 : {1: 5.0, 2: 5.0}
+         3 : {1: 8.5, 2: 6.0}
+MILP Encoding for the first set if the input set is splitted
+Only initial set encoding will be changed for other sets
+          x_1_1*1.0 >= 1.0
+          x_1_1*1.0 <= 2.0
+          x_1_2*1.0 >= 1.0
+          x_1_2*1.0 <= 2.0
+          x_1_1*1.0 + x_1_2*-1.0 + x_2_1*-1.0 <= 1.0
+          x_1_1*1.0 + x_1_2*-1.0 + x_2_1*-1.0 + q_2_1*5.0 >= 1.0
+          x_2_1*1.0 >= 0.0
+          x_2_1*-1.0 + q_2_1*-5.0 >= -5.0
+          x_1_1*0.5 + x_1_2*1.5 + x_2_2*-1.0 <= -1.0
+          x_1_1*0.5 + x_1_2*1.5 + x_2_2*-1.0 + q_2_2*5.0 >= -1.0
+          x_2_2*1.0 >= 0.0
+          x_2_2*-1.0 + q_2_2*-5.0 >= -5.0
+          x_2_1*1.0 + x_2_2*0.5 + x_3_1*-1.0 <= -1.0
+          x_2_1*1.0 + x_2_2*0.5 + x_3_1*-1.0 >= -1.0
+          x_2_2*-1.0 + x_3_2*-1.0 <= -1.0
+          x_2_2*-1.0 + x_3_2*-1.0 >= -1.0
 Reach Set 
-       Lower: [-3.75, -11.0]
-       Upper: [13.0, 5.5]
-Safety Checking 
-       MILP Encoding
-          Y_1*1.0 >= -3.75
-          Y_1*1.0 <= 13.0
-          Y_2*1.0 >= -11.0
-          Y_2*1.0 <= 5.5
-          Y_1*-1.0 <= -10.0
-          Y_2*-1.0 <= -10.0
-Safety Status: Safe 
+       Lower: [2.5, -4.0]
+       Upper: [3.5, -2.0]
