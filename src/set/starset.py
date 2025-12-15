@@ -258,7 +258,7 @@ class StarSet(Set, ABC):
         r2: int = np.shape(objStarSet.getMatConstraintC())[0]
         c2: int = np.shape(objStarSet.getMatConstraintC())[1]
         matConstraintC: npt.ArrayLike = np.block([[self.__matConstraintC__, np.zeros((r1, c2))],
-                                                  [np.zeros((r2, c1)), objStarSet.matConstraintC]])
+                                                  [np.zeros((r2, c1)), objStarSet.getMatConstraintC()]])
 
         # Vertical concatenation of column vectors cvecConstraintd of both self and objStarSet
         arrayConstraintd: npt.ArrayLike = np.concatenate((self.__arrayConstraintd__, objStarSet.getArrayConstraintd()),

@@ -10,64 +10,122 @@ Specification
        Unsafe Property (A1X<=b1 or A2X<=b1 or ...)
         Property 1
         [-1.  0.]      -10.0
-       Lower Matrices and Biases
-        L2 to L1                              L3 to L2                              
-       1:[0.5, -1.0]        -1.0            1:[0.5]        1.0
-       Upper Matrices and Biases
-        L2 to L1                              L3 to L2                              
-       1:[1.0, 2.0]        1.0            1:[1.0]        1.0
+        [ 0. -1.]      -1.0
+Interation0
 Number of Interval Stars after each layer
        After Layer         Number of Interval Stars
            2                       2
 Lower Basis Matrix
-[[-1.75  0.25 -0.5 ]]
-Upper Basis Matrix
-[[5.5 0.5 1. ]]
+[[-1.0 0.5 -0.5]
+ [4.75 0.25 1.0]]
 Predicate Matrix
-[[ 1.   0. ]
- [-1.   0. ]
- [ 0.   1. ]
- [ 0.  -1. ]
- [-0.5 -1. ]]
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [-0.5 0.5]
+ [-0.25 -1.0]]
 Predicate Constant
-[1.  1.  1.  1.  5.5]
+[ 1.    1.    1.    1.   -1.    4.75]
 Lower Basis Matrix
-[[0. 0. 0.]]
-Upper Basis Matrix
-[[0. 0. 0.]]
+[[0.0 0.0 0.0]
+ [4.75 0.25 1.0]]
 Predicate Matrix
-[[ 1.    0.  ]
- [-1.    0.  ]
- [ 0.    1.  ]
- [ 0.   -1.  ]
- [ 0.25 -0.5 ]]
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [0.5 -0.5]
+ [-0.25 -1.0]]
 Predicate Constant
-[1.   1.   1.   1.   1.75]
+[1.   1.   1.   1.   1.   4.75]
            3                       2
 Lower Basis Matrix
-[[-2.5   0.25 -1.  ]]
-Upper Basis Matrix
-[[12.  1.  2.]]
+[[2.375 0.625 0.0]]
 Predicate Matrix
-[[ 1.   0. ]
- [-1.   0. ]
- [ 0.   1. ]
- [ 0.  -1. ]
- [-0.5 -1. ]]
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [-0.5 0.5]
+ [-0.25 -1.0]]
 Predicate Constant
-[1.  1.  1.  1.  5.5]
+[ 1.    1.    1.    1.   -1.    4.75]
 Lower Basis Matrix
-[[1. 0. 0.]]
-Upper Basis Matrix
-[[1. 0. 0.]]
+[[3.375 0.125 0.5]]
 Predicate Matrix
-[[ 1.    0.  ]
- [-1.    0.  ]
- [ 0.    1.  ]
- [ 0.   -1.  ]
- [ 0.25 -0.5 ]]
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [0.5 -0.5]
+ [-0.25 -1.0]]
 Predicate Constant
-[1.   1.   1.   1.   1.75]
+[1.   1.   1.   1.   1.   4.75]
+Interation1
+Number of Interval Stars after each layer
+       After Layer         Number of Interval Stars
+           2                       2
+Lower Basis Matrix
+[[-1.375 1.0 -1.625]
+ [9.25 0.5 3.25]]
+Predicate Matrix
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [-1.0 1.625]
+ [-0.5 -3.25]]
+Predicate Constant
+[ 1.     1.     1.     1.    -1.375  9.25 ]
+Lower Basis Matrix
+[[0.0 0.0 0.0]
+ [9.25 0.5 3.25]]
+Predicate Matrix
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [1.0 -1.625]
+ [-0.5 -3.25]]
+Predicate Constant
+[1.    1.    1.    1.    1.375 9.25 ]
+           3                       2
+Lower Basis Matrix
+[[4.25 1.25 0.0]]
+Predicate Matrix
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [-1.0 1.625]
+ [-0.5 -3.25]]
+Predicate Constant
+[ 1.     1.     1.     1.    -1.375  9.25 ]
+Lower Basis Matrix
+[[5.625 0.25 1.625]]
+Predicate Matrix
+[[1.0 0.0]
+ [-1.0 0.0]
+ [0.0 1.0]
+ [0.0 -1.0]
+ [1.0 -1.625]
+ [-0.5 -3.25]]
+Predicate Constant
+[1.    1.    1.    1.    1.375 9.25 ]
 Reach Set 
-       Lower: [-3.75]
-       Upper: [15.0]
+       Lower: [3.75 0.75]
+       Upper: [9.   9.75]
+Safety Checking 
+       MILP Encoding
+          x_0*1.0 + alpha_0*-1.0 + alpha_1*-1.625 == 6.375
+          x_1*1.0 + alpha_0*-1.0 + alpha_1*1.625 + alpha_2*-1.875 == 5.25
+          alpha_0*1.0 <= 1.0
+          alpha_0*-1.0 <= 1.0
+          alpha_1*1.0 <= 1.0
+          alpha_1*-1.0 <= 1.0
+          alpha_2*1.0 <= 1.0
+          alpha_2*-1.0 <= 1.0
+          x_0*-1.0 <= -10.0
+          x_1*-1.0 <= -1.0
+Safety Status: Safe 
