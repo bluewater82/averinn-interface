@@ -226,9 +226,10 @@ class SetUTS:
             varMap = {v: grbModelCC.getVarByName(v.varName) for v in grbModel.getVars()}
             numOfRows: int = A.shape[0]
             numOfCols: int = A.shape[1]
+
             for j in range(numOfRows):
                 grbModelCC.addConstr(quicksum(np.float64(A[j][k]) *
-                                              varMap[dictVars[1][j + 1]]
+                                              varMap[dictVars[1][k + 1]]
                                               for k in range(numOfCols)) <= np.float64(b[j]))
             grbModelCC.update()
 

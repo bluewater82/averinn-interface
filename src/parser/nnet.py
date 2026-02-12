@@ -160,7 +160,8 @@ class Nnet(Parser, ABC):
             arrayBias: npt.ArrayLike = np.array([0.0 for j in range(intNumTargetNodes)])
             for j in range(1, intNumTargetNodes + 1, 1):
                 # extract weight information and create edges between nodes
-                listWeights = listContents[intLineNumber].split(',')[:-1]
+                #listWeights = listContents[intLineNumber].split(',')[:-1]
+                listWeights = listContents[intLineNumber].split(',')
                 listWeights = np.array([float(listWeights[m]) for m in range(len(listWeights))])
                 arrayWeight[:, j - 1] = listWeights
                 intLineNumber += 1

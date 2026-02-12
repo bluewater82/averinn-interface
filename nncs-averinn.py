@@ -10,6 +10,7 @@ from src.parser.isherlock import ISherlock
 from src.parser.nnet import Nnet
 from src.parser.onnxtonn import ONNX
 from src.parser.parser import Parser
+from src.parser.parseruts import ParserUTS
 from src.parser.sherlock import Sherlock
 from src.partition.partition import Partition
 from src.rasc.milp import Milp
@@ -28,10 +29,12 @@ from src.types.techniquetype import TechniqueType
 from src.utilities.log import Log
 import configparser
 import json
+import time
 
 from src.utilities.spec import Spec
 from src.utilities.vnnlib import VNNLib
 
+stime = time.time()
 ##################################
 ##### Parse Config.ini File ######
 ##################################
@@ -45,6 +48,8 @@ inifile.read(sys.argv[1], 'UTF-8')
 nnformat: str = json.loads(inifile.get('settings', 'nnformat'))
 # In nncs-config.ini, please specify correct path of neural network
 nnpath: str = json.loads(inifile.get('settings', 'nnpath'))
+# path of the dynamics
+dynpath: str = json.loads(inifile.get('settings', 'dynpath'))
 # In nncs-config.ini, please specify correct path of spec if needed, "NONE" otherwise
 specpath: str = json.loads(inifile.get('settings', 'specpath'))
 # Problem type "REACH" or "SAFETY"
@@ -69,21 +74,29 @@ lastReluC: str = json.loads(inifile.get('settings', 'lastRelu'))
 # In config,ini, specify partition strategy, since only one strategy is
 # is implemented which is fixed. Use "FIXED"
 partitionTypeC: str = json.loads(inifile.get('settings', 'partitionType'))
-# Dimension of the dynamical system
-sysDim: int = json.loads(inifile.get('settings', 'sysDim'))
-# Dimension of the input in the dynamical system
-inputDim: int = json.loads(inifile.get('settings', 'inputDim'))
-# Matrix A for linear discrete time system AX+BU+C
-matAC = json.loads(inifile.get('settings', 'matA'))
-# Matrix B for linear discrete time system AX+BU+C
-# If B is not in the dynamics, use NONE
-matBC = json.loads(inifile.get('settings', 'matB'))
-# Vector C for linear discrete time system AX+BU+C
-# If C is not in the dynamics, use NONE
-arrayCC = json.loads(inifile.get('settings', 'arrayC'))
 # Number of time steps
 K: int = json.loads(inifile.get('settings', 'K'))
 
+# Reading matrics corresponding to dynamics
+dynfile = configparser.ConfigParser()
+dynfile.read(dynpath, 'UTF-8')
+
+# Dimension of the dynamical system
+sysDim: int = json.loads(dynfile.get('settings', 'sysDim'))
+# Dimension of the input in the dynamical system
+inputDim: int = json.loads(dynfile.get('settings', 'inputDim'))
+# Matrix A for linear discrete time system AX+BU+C
+matAC = json.loads(dynfile.get('settings', 'matA'))
+# Matrix B for linear discrete time system AX+BU+C
+# If B is not in the dynamics, use NONE
+matBC = json.loads(dynfile.get('settings', 'matB'))
+# Vector C for linear discrete time system AX+BU+C
+# If C is not in the dynamics, use NONE
+arrayCC = json.loads(dynfile.get('settings', 'arrayC'))
+# listA for unsafe set
+listA = json.loads(dynfile.get('settings', 'listA'))
+# listB for unsafe set
+listB = json.loads(dynfile.get('settings', 'listB'))
 ##################################
 ########## Parameters  ###########
 ##################################
@@ -125,7 +138,7 @@ if matBC != "NONE":
 
 arrayC = None
 if arrayCC != "NONE":
-    arrayC = np.array(matBC, dtype=np.float64)
+    arrayC = np.array(arrayCC, dtype=np.float64)
 
 objDtDyn: DtDyn = DtDyn(sysDim, inputDim, matA, matB, arrayC)
 
@@ -150,6 +163,11 @@ elif nnformat == "ISHERLOCK":
 
 # create an instance of GNN
 objGNN = objParser.getNetwork()
+print(objGNN.getDictNumNeurons())
+# Convert into robust GNN
+#robustValue: np.float64 = np.float64(0.0001)
+#objGNN = ParserUTS.toRobustGNN(objGNN, robustValue)
+
 Log.message("Neural Network\n")
 objGNN.display()
 ##############################################
@@ -159,6 +177,7 @@ dictNeurons = objGNN.getDictNumNeurons()
 ioSpec = VNNLib.read_vnnlib_simple(specpath, dictNeurons[1], dictNeurons[1])
 objStateSet = Spec.getInput(ioSpec)
 outputConstr = Spec.getOutput(ioSpec)
+#outputConstr = (np.array(listA, dtype=np.float64), np.array(listB, dtype=np.float64))
 Log.message("Specification\n")
 Log.message("       Input Set\n")
 Log.message("       Lower: "+str(objStateSet.getArrayLow())+"\n")
@@ -195,17 +214,22 @@ for i in range(K):
         objTechnique = Milp(objGNNUse, objStateSet, outputConstr, solverType, lastRelu)
         listSets: List[Set] = objTechnique.reachSet()
         objInputSet = SetUTS.rangeOfSets(listSets)
+        rangeSet = objInputSet.getRange()
+        Log.message("       Lower: " + str(rangeSet[0]) + "\n")
+        Log.message("       Upper: " + str(rangeSet[1]) + "\n")
         if (objDtDyn.B is None) and (objDtDyn.C is None):
             objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
         elif (objDtDyn.B is None) and (objDtDyn.C is not None):
             objStateSet = objStateSet.affineMap(objDtDyn.A, objDtDyn.C, objDtDyn.A, objDtDyn.C)
         elif (objDtDyn.B is not None) and (objDtDyn.C is None):
             objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
-            objStateSet = objStateSet.minkowskiSum(objInputSet.linearMap(objDtDyn.B, objDtDyn.B))
+            linearInput = objInputSet.linearMap(objDtDyn.B, objDtDyn.B)
+            objStateSet = objStateSet.minkowskiSum(linearInput)
         elif (objDtDyn.B is not None) and (objDtDyn.C is not None):
             objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
-            objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C,
-                                                                         objDtDyn.B, objDtDyn.C))
+            affineInput = objInputSet.affineMap(objDtDyn.B, objDtDyn.C, objDtDyn.B, objDtDyn.C)
+            objStateSet = objStateSet.minkowskiSum(affineInput)
+
     elif techniqueType == TechniqueType.PROPAGATION:
         if absRequired == "YES":
             objStateSet = SetUTS.toIntervalStarSet(objStateSet)
@@ -215,6 +239,9 @@ for i in range(K):
         objTechnique = SetPropagation(objGNNUse, objStateSet, outputConstr, solverType, lastRelu)
         listSets: List[Set] = objTechnique.reachSet()
         objInputSet = SetUTS.rangeOfSets(listSets)
+        rangeSet = objInputSet.getRange()
+        Log.message("       Lower: " + str(rangeSet[0]) + "\n")
+        Log.message("       Upper: " + str(rangeSet[1]) + "\n")
         if absRequired == "YES":
             objInputSet = SetUTS.toIntervalStarSet(objInputSet)
         else:
@@ -231,6 +258,11 @@ for i in range(K):
             objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
             objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C,
                                                                          objDtDyn.B, objDtDyn.C))
+    Log.message("Reach Set \n")
+    rangeSet = objStateSet.getRange()
+    Log.message("       Lower: " + str(rangeSet[0]) + "\n")
+    Log.message("       Upper: " + str(rangeSet[1]) + "\n")
+
 
 if probType == ProbType.REACH:
     Log.message("Reach Set \n")
@@ -248,3 +280,6 @@ elif probType == ProbType.SAFETY:
         Log.message("Safety Status: Unsafe \n")
     else:
         Log.message("Safety Status: Safe \n")
+
+etime = time.time()
+print(etime-stime)

@@ -57,9 +57,9 @@ class Gurobi(Solver, ABC):
 
         if self.__model__.Status == GRB.INFEASIBLE:
             # print(self.__model__.Status)
-            # self.__model__.write('./model.lp')
-            #self.__model__.computeIIS()
-            #self.__model__.write("./model.ilp")
+            self.__model__.write('./model.lp')
+            self.__model__.computeIIS()
+            self.__model__.write("./model.ilp")
             return False
         else:
             self.__model__.write('./model.lp')

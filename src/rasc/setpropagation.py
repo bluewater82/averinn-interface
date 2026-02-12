@@ -52,7 +52,8 @@ class SetPropagation(Technique, ABC):
         listSet: List[Set] = [self.__objSet__]
         Log.message("Initial set\n")
         Log.message(self.__objSet__.display())
-
+        numOfStars: List[int] = []
+        numOfStars.append(len(listSet))
         for i in range(1, numOfLayer, 1):
             Log.message("       After Layer         Number of Stars\n")
             Log.message("           "+ str(i+1))
@@ -78,12 +79,18 @@ class SetPropagation(Technique, ABC):
             #objSet: Set = SetUTS.rangeOfSets(listSet)
             #listSet = [SetUTS.toIntervalStarSet(objSet)]
             Log.message("                       "+str(len(listSet))+"\n")
+            # number of stars
+            numOfStars.append(len(listSet))
+            # display star sets
             setNumber: int = 1
             for SP in listSet:
                 Log.message("Set "+ str(setNumber)+"\n")
                 Log.message(SP.display())
                 setNumber += 1
 
+        f = open("temp.txt", 'w')
+        f.write(str(numOfStars))
+        f.close()
         return listSet
 
     def checkSafety(self) -> bool:

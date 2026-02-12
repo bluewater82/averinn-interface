@@ -237,7 +237,6 @@ class ONNX(Parser, ABC):
 
         while cur_node is not None:
             op = cur_node.op_type
-
             if op in ['MatMul', 'Relu', 'Gemm']:
                 # Special sub-code just for tll benchmark. Ignore for others
                 if last_matmul_relu == op:
@@ -267,7 +266,6 @@ class ONNX(Parser, ABC):
 
                 data = np.frombuffer(init.raw_data, dtype='<f4')  # little endian float32
                 shape = tuple(d for d in init.dims)
-
                 weights.append(np.transpose(data.reshape(shape)))
 
             elif op == 'Relu':

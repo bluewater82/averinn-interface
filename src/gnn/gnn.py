@@ -153,7 +153,7 @@ class GNN:
             for i, matrix in enumerate(padded_matrices):
                 row_elements.append("       "+str(row_index + 1) + ":" + str(matrix[row_index]))
                 # For large network, it creates problem
-                row_elements.append("   "+str(padded_biases[i][row_index]))
+               # row_elements.append("   "+str(padded_biases[i][row_index]))
             Log.message(str('     '.join(row_elements))+"\n")
 
     def getLowerMatrixByLayer(self, intLayer: int) -> npt.ArrayLike:

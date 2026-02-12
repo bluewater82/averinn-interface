@@ -2,6 +2,7 @@
 Author: Ratan Lal
 Date : November 4, 2024
 """
+import numpy as np
 
 from src.gnn.number import Number
 from src.gnn.ireal import IReal
@@ -22,6 +23,46 @@ class ParserUTS:
     """
     All common functions related to PARSER modules
     """
+
+    @staticmethod
+    def toRobustGNN(objGNN: GNN, robustValue: np.float64) -> GNN:
+        """
+        Change weights and biases
+        :param objGNN: A general neural network
+        :type objGNN: GNN
+        :param robustValue: Robust value
+        :type robustValue: float
+        :return: (objGNNRobust-> GNN)
+        """
+        dictNeurons: Dict[int, int] = objGNN.getDictNumNeurons()
+        dictWeightLow: Dict[int, npt.ArrayLike] = {}
+        dictWeightHigh: Dict[int, npt.ArrayLike] = {}
+        dictBiasLow: Dict[int, npt.ArrayLike] = {}
+        dictBiasHigh: Dict[int, npt.ArrayLike] = {}
+
+        numOfLayers: int = objGNN.getNumOfLayers()
+        for i in range(1, numOfLayers, 1):
+            arrayWeightLow = objGNN.getLowerMatrixByLayer(i)
+            arrayWeightHigh = objGNN.getUpperMatrixByLayer(i)
+            arrayBiasLow = objGNN.getLowerBiasByLayer(i + 1)
+            arrayBiasHigh = objGNN.getUpperBiasByLayer(i + 1)
+            row, col = arrayWeightLow.shape
+            for j in range(row):
+                for k in range(col):
+                    arrayWeightLow[j][k] = arrayWeightLow[j][k] - robustValue
+                    arrayWeightHigh[j][k] = arrayWeightHigh[j][k] + robustValue
+                arrayBiasLow[j] = arrayBiasLow[j] - robustValue
+                arrayBiasHigh[j] = arrayBiasHigh[j] + robustValue
+
+            dictWeightLow[i] = arrayWeightLow
+            dictWeightHigh[i] = arrayWeightHigh
+            dictBiasLow[i + 1] = arrayBiasLow
+            dictBiasHigh[i + 1] = arrayBiasHigh
+
+        objRobustGNN: GNN = ParserUTS.toIntervalGNN(dictNeurons, dictWeightLow, dictWeightHigh, dictBiasLow,
+                                                    dictBiasHigh)
+
+        return objRobustGNN
 
     @staticmethod
     def toStandardGNN(dictNeurons: Dict[int, int], dictWeight: Dict[int, npt.ArrayLike],

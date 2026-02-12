@@ -74,8 +74,14 @@ class Box(Set, ABC):
                 where X is a self
         """
         # WX
-        arrayWXLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
-        arrayWXHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
+        arrayMatMulLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
+        arrayMatMulHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
+        length = len(arrayMatMulLow)
+        arrayWXLow: npt.ArrayLike = np.array([0.0 for i in range(length)], dtype=np.float64)
+        arrayWXHigh: npt.ArrayLike = np.array([0.0 for i in range(length)], dtype=np.float64)
+        for i in range(length):
+            arrayWXLow[i] = min(arrayMatMulLow[i], arrayMatMulHigh[i])
+            arrayWXHigh[i] = max(arrayMatMulLow[i], arrayMatMulHigh[i])
 
         # Linear map of self
         objSetLinear: Set = Box(arrayWXLow, arrayWXHigh)
@@ -98,9 +104,14 @@ class Box(Set, ABC):
         :return: (objSetAffine -> Set) an instance of Set representing WX+b,
         """
         # WX
-        arrayWXLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
-        arrayWXHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
-
+        arrayMatMulLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
+        arrayMatMulHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
+        length = len(arrayMatMulLow)
+        arrayWXLow: npt.ArrayLike = np.array([0.0 for i in range(length)], dtype=np.float64)
+        arrayWXHigh: npt.ArrayLike = np.array([0.0 for i in range(length)], dtype=np.float64)
+        for i in range(length):
+            arrayWXLow[i] = min(arrayMatMulLow[i], arrayMatMulHigh[i])
+            arrayWXHigh[i] = max(arrayMatMulLow[i], arrayMatMulHigh[i])
         # WX + b
         arrayAffineLow = arrayWXLow + arrayLow
         arrayAffineHigh = arrayWXHigh + arrayLow
@@ -200,8 +211,9 @@ class Box(Set, ABC):
         Returns the absolute value of the set
         :return: (arrayPoint -> npt.ArrayLike)
         """
+
         arrayPoint: npt.ArrayLike = np.array([max(abs(self.__arrayLow__[i]), abs(self.__arrayHigh__[i]))
-                                              for i in range(self.getDimension())], dtype=object)
+                                              for i in range(self.getDimension())], dtype=np.float64)
 
         return arrayPoint
 
