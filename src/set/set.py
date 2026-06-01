@@ -57,7 +57,6 @@ class Set(metaclass=ABCMeta):
         """
         pass
 
-
     @abstractmethod
     def getMatConstraintC(self) -> npt.ArrayLike:
         """
@@ -218,6 +217,7 @@ class Set(metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
     def getModelVars(self, varName: str) -> Tuple[Model, Dict[int, Dict[int, Var]]]:
         """"
         Get encoding of a set and dictionary of variables
@@ -235,6 +235,7 @@ class Set(metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
     def getRange(self) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
         """
         Return the range of the IntervalStarSet

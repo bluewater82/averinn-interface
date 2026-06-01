@@ -1,11 +1,8 @@
-import ast
 import sys
 from typing import List, Dict, Tuple
-import time
+
 import numpy as np
 import numpy.typing as npt
-from pandas import DataFrame
-
 from src.abstraction.abstraction import Abstraction
 from src.dyn.dtdyn import DtDyn
 from src.gnn.gnn import GNN
@@ -34,12 +31,6 @@ import json
 
 from src.utilities.spec import Spec
 from src.utilities.vnnlib import VNNLib
-
-#########################################
-### Dictionaries for Time and Result #####
-#########################################
-dictForDataFrame: Dict[str, npt.ArrayLike] = dict()
-dictStarSets: Dict[int, Dict[int, int]] = dict()
 
 ##################################
 ##### Parse Config.ini File ######
@@ -152,7 +143,6 @@ Log.message(Spec.display(outputConstr))
 ####################################
 ####  Abstraction of GNN ###########
 ####################################
-stime = time.time()
 objGNNAbs: GNN = None
 if absRequired == "YES":
     objPartition: Partition = Partition(objGNN, partitionType, numOfAbsNodes, None)
@@ -189,31 +179,11 @@ elif techniqueType == TechniqueType.PROPAGATION:
     listSets: List[Set] = objTechnique.reachSet()
     objStateSet = SetUTS.rangeOfSets(listSets)
 
-etime = time.time()
-rangeSet = objStateSet.getRange()
-lowRange = np.insert(rangeSet[0], len(rangeSet[0]), etime-stime)
-highRange = np.insert(rangeSet[1], len(rangeSet[1]), etime-stime)
-lowRange = np.array([round(x, 2) for x in lowRange])
-highRange = np.array([round(x, 2) for x in highRange])
-dictForDataFrame[str(0)+"Low"] = lowRange
-dictForDataFrame[str(0)+"High"] = highRange
-if techniqueType == TechniqueType.PROPAGATION:
-    f = open("temp.txt")
-    contents = f.readline()
-    # print(contents)
-    dictStarSets[0] = ast.literal_eval(contents)
-df = DataFrame(dictForDataFrame)
-df.to_csv("data.csv")
-if techniqueType == TechniqueType.PROPAGATION:
-    #print(dictStarSets)
-    df = DataFrame(dictStarSets)
-    df.to_csv("datastar.csv")
 if probType == ProbType.REACH:
     Log.message("Reach Set \n")
     rangeSet = objStateSet.getRange()
     Log.message("       Lower: " + str(rangeSet[0]) + "\n")
     Log.message("       Upper: " + str(rangeSet[1]) + "\n")
-
 elif probType == ProbType.SAFETY:
     Log.message("Reach Set \n")
     rangeSet = objStateSet.getRange()

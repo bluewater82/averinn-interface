@@ -1,0 +1,13 @@
+\ Model _copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+\ Signature: 0x5645255a0924ed22
+Maximize
+ 
+Subject To
+ R5: - alpha_1 <= 0
+ R6: - alpha_2 <= 0
+ R10: alpha_1 + 3 alpha_2 <= -2
+Bounds
+ alpha_1 free
+ alpha_2 free
+End

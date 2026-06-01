@@ -1,21 +1,18 @@
 \ Model _copy
 \ LP format - for model browsing. Use MPS format to capture full model detail.
-\ Signature: 0xc519bea94ca5f918
+\ Signature: 0x6f5543aa9a168578
 Maximize
  
 Subject To
- R41: - alpha_1 <= 1
- R43: - alpha_2 <= 1
- R44: alpha_3 <= 1
- R47: - alpha_4 <= 1
- R48: alpha_5 <= 1
- R149: 23.85429475757642 alpha_1 + 0.0660451748790235 alpha_2
-   - 4.3562038528011636e-04 alpha_3 + 2.003880768286049 alpha_4
-   - 0.1357859834981897 alpha_5 <= -248.2190541455104
+ R151: - alpha_1 <= 1
+ R152: alpha_2 <= 1
+ R154: alpha_3 <= 1
+ R157: - alpha_4 <= 1
+ R232: 0.00762985 alpha_1 - 0.00400815 alpha_2 - 0.0072074 alpha_3
+   + 0.00360995 alpha_4 <= -0.0758392443408966
 Bounds
  alpha_1 free
  alpha_2 free
  alpha_3 free
  alpha_4 free
- alpha_5 free
 End

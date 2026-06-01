@@ -44,7 +44,6 @@ class Relu:
         intDim: int = objSet.getDimension()
         listSets: List[Set] = [objSet]
         for i in range(intDim):
-            #Log.message("For neurons " + str(i+1)+"\n")
             tempListSets: List[Set] = []
             for S in listSets:
                 objSetIPHSi: Set = S.intersectPHSByIndex(i)
@@ -58,8 +57,8 @@ class Relu:
                     matHigh[i, i] = 0.0
                     tempListSets.append(objSetINHSi.linearMap(matLow, matHigh))
             listSets = tempListSets
-            #Log.message("Number of sets " + str(len(listSets))+"\n")
 
+        # Return list of sets
         return listSets
 
 

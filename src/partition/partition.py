@@ -3,13 +3,8 @@ Author: Ratan Lal
 Date : November 4, 2024
 """
 import random
-from typing import Dict, List, Tuple
-import math
-
-import numpy as np
-
+from typing import Dict, List
 from src.gnn.gnn import GNN
-from src.gnn.ireal import IReal
 from src.gnn.number import Number
 from src.types.datatype import DataType
 from src.types.partitiontype import PartitionType

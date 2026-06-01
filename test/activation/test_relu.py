@@ -3,7 +3,7 @@ from unittest import TestCase
 from src.activation.relu import Relu
 from typing import List
 
-import numpy.testing as npt
+import numpy.typing as npt
 import numpy as np
 from src.set.set import Set
 from src.set.intervalmatrix import IntervalMatrix
@@ -34,8 +34,8 @@ class TestRelu(TestCase):
         objSet: Set = IntervalStarSet(IMBasisV, matConstraintC, arrayConstraintd)
 
         listSet: List[Set] = Relu.anySet(objSet)
-        np.testing.assert_array_equal(objSet.getMatBasisV().getMatLow(), listSet[0].getMatBasisV().getMatLow(),
+        np.testing.assert_array_equal(objSet.getIMatBasisV().getMatLow(), listSet[0].getIMatBasisV().getMatLow(),
                                       "Basic Matrices are not matched")
-        np.testing.assert_array_equal(objSet.getMatBasisV().getMatHigh(), listSet[0].getMatBasisV().getMatHigh(),
+        np.testing.assert_array_equal(objSet.getIMatBasisV().getMatHigh(), listSet[0].getIMatBasisV().getMatHigh(),
                                       "Basic Matrices are not matched")
 

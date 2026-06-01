@@ -14,6 +14,7 @@ from src.set.set import Set
 from src.solver.gurobi import Gurobi
 from src.solver.solver import Solver
 from src.types.sign import Sign
+from src.utilities.log import Log
 
 
 class StarSet(Set, ABC):
@@ -277,6 +278,7 @@ class StarSet(Set, ABC):
         # Encode Interval Star Set in Gurobi
         grbModel, dictVars = self.__encode__('X')
         objSolver: Solver = Gurobi(grbModel, dictVars)
+        Log.message(self.display())
         objSet: Set = objSolver.outputRange()
         rangeISS: Tuple[npt.ArrayLike, npt.ArrayLike] = (objSet.getArrayLow(), objSet.getArrayHigh())
         return rangeISS

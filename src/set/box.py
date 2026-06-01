@@ -104,6 +104,7 @@ class Box(Set, ABC):
         :return: (objSetAffine -> Set) an instance of Set representing WX+b,
         """
         # WX
+
         arrayMatMulLow: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayLow__))
         arrayMatMulHigh: npt.ArrayLike = np.array(np.matmul(matLow, self.__arrayHigh__))
         length = len(arrayMatMulLow)
@@ -114,7 +115,7 @@ class Box(Set, ABC):
             arrayWXHigh[i] = max(arrayMatMulLow[i], arrayMatMulHigh[i])
         # WX + b
         arrayAffineLow = arrayWXLow + arrayLow
-        arrayAffineHigh = arrayWXHigh + arrayLow
+        arrayAffineHigh = arrayWXHigh + arrayHigh
 
         # Affine map of self
         objSetAffine: Set = Box(arrayAffineLow, arrayAffineHigh)

@@ -1,13 +1,13 @@
-import ast
 import sys
 from typing import List, Dict, Tuple
-from pandas import DataFrame
+
 import numpy as np
 import numpy.typing as npt
 from src.abstraction.abstraction import Abstraction
 from src.dyn.dtdyn import DtDyn
 from src.gnn.gnn import GNN
 from src.parser.isherlock import ISherlock
+from src.parser.newonnx import NEWONNX
 from src.parser.nnet import Nnet
 from src.parser.onnxtonn import ONNX
 from src.parser.parser import Parser
@@ -35,14 +35,7 @@ import time
 from src.utilities.spec import Spec
 from src.utilities.vnnlib import VNNLib
 
-#########################################
-### Dictionaries for Time and Result #####
-#########################################
-dictForDataFrame: Dict[str, npt.ArrayLike] = dict()
-dictStarSets: Dict[int, Dict[int, int]] = dict()
-
-
-
+stime = time.time()
 ##################################
 ##### Parse Config.ini File ######
 ##################################
@@ -163,7 +156,10 @@ objParser: Parser = None
 if nnformat == "SHERLOCK":
     objParser = Sherlock(nnpath)
 elif nnformat == "ONNX":
-    objParser = ONNX(nnpath)
+    try:
+        objParser = ONNX(nnpath)
+    except:
+        objParser = NEWONNX(nnpath)
 elif nnformat == "NNET":
     objParser = Nnet(nnpath)
 elif nnformat == "ISHERLOCK":
@@ -173,8 +169,8 @@ elif nnformat == "ISHERLOCK":
 objGNN = objParser.getNetwork()
 print(objGNN.getDictNumNeurons())
 # Convert into robust GNN
-robustValue: np.float64 = np.float64(0.001)
-objGNN = ParserUTS.toRobustGNN(objGNN, robustValue)
+#robustValue: np.float64 = np.float64(0.0001)
+#objGNN = ParserUTS.toRobustGNN(objGNN, robustValue)
 
 Log.message("Neural Network\n")
 objGNN.display()
@@ -184,14 +180,12 @@ objGNN.display()
 dictNeurons = objGNN.getDictNumNeurons()
 ioSpec = VNNLib.read_vnnlib_simple(specpath, dictNeurons[1], dictNeurons[1])
 objStateSet = Spec.getInput(ioSpec)
-dictForDataFrame[str(0)+"Low"] = np.insert(objStateSet.getArrayLow(), objStateSet.getDimension(), 0)
-dictForDataFrame[str(0)+"High"] = np.insert(objStateSet.getArrayHigh(), objStateSet.getDimension(), 0)
 outputConstr = Spec.getOutput(ioSpec)
-outputConstr = (np.array(listA, dtype=np.float64), np.array(listB, dtype=np.float64))
+#outputConstr = (np.array(listA, dtype=np.float64), np.array(listB, dtype=np.float64))
 Log.message("Specification\n")
 Log.message("       Input Set\n")
-Log.message("       Lower: "+str(objStateSet.getArrayLow())+"\n")
-Log.message("       Upper: "+str(objStateSet.getArrayHigh())+"\n")
+Log.message("       Lower: " + str(objStateSet.getArrayLow()) + "\n")
+Log.message("       Upper: " + str(objStateSet.getArrayHigh()) + "\n")
 Log.message("       Unsafe Property (A1X<=b1 or A2X<=b1 or ...)\n")
 Log.message(Spec.display(outputConstr))
 ####################################
@@ -199,11 +193,10 @@ Log.message(Spec.display(outputConstr))
 ####################################
 objGNNAbs: GNN = None
 if absRequired == "YES":
-    #objPartition: Partition = Partition(objGNN, partitionType, numOfAbsNodes, None)
-    #dictPartition: Dict[int, Dict[int, set[int]]] = objPartition.getPartition()
-    #objAbstraction: Abstraction = Abstraction(objGNN, dictPartition, absType)
-    #objGNNAbs = objAbstraction.getAbstraction()
-    objGNNAbs = objGNN
+    objPartition: Partition = Partition(objGNN, partitionType, numOfAbsNodes, None)
+    dictPartition: Dict[int, Dict[int, set[int]]] = objPartition.getPartition()
+    objAbstraction: Abstraction = Abstraction(objGNN, dictPartition, absType)
+    objGNNAbs = objAbstraction.getAbstraction()
 
 ####################################
 #### Solution based on problems ####
@@ -218,10 +211,8 @@ if absRequired == "YES":
 else:
     objGNNUse = objGNN
 
-
 for i in range(K):
-    stime = time.time()
-    Log.message("Interation"+str(i)+"\n")
+    Log.message("Interation" + str(i) + "\n")
     if techniqueType == TechniqueType.MILP:
         objTechnique = Milp(objGNNUse, objStateSet, outputConstr, solverType, lastRelu)
         listSets: List[Set] = objTechnique.reachSet()
@@ -270,36 +261,16 @@ for i in range(K):
             objStateSet = objStateSet.linearMap(objDtDyn.A, objDtDyn.A)
             objStateSet = objStateSet.minkowskiSum(objInputSet.affineMap(objDtDyn.B, objDtDyn.C,
                                                                          objDtDyn.B, objDtDyn.C))
-
     Log.message("Reach Set \n")
     rangeSet = objStateSet.getRange()
     Log.message("       Lower: " + str(rangeSet[0]) + "\n")
     Log.message("       Upper: " + str(rangeSet[1]) + "\n")
-    etime = time.time()
-    lowRange = np.insert(rangeSet[0], len(rangeSet[0]), etime-stime)
-    highRange = np.insert(rangeSet[1], len(rangeSet[1]), etime-stime)
-    lowRange = np.array([round(x, 2) for x in lowRange])
-    highRange = np.array([round(x, 2) for x in highRange])
-    dictForDataFrame[str(i+1)+"Low"] = lowRange
-    dictForDataFrame[str(i+1)+"High"] = highRange
-    if techniqueType == TechniqueType.PROPAGATION:
-        f = open("temp.txt")
-        contents = f.readline()
-        #print(contents)
-        dictStarSets[str(i)] = ast.literal_eval(contents)
 
-#print(dictForDataFrame)
-df = DataFrame(dictForDataFrame)
-df.to_csv("data.csv")
-if techniqueType == TechniqueType.PROPAGATION:
-    #print(dictStarSets)
-    df = DataFrame(dictStarSets)
-    df.to_csv("datastar.csv")
 if probType == ProbType.REACH:
     Log.message("Reach Set \n")
     rangeSet = objStateSet.getRange()
-    Log.message("       Lower: "+str(rangeSet[0])+"\n")
-    Log.message("       Upper: "+str(rangeSet[1])+"\n")
+    Log.message("       Lower: " + str(rangeSet[0]) + "\n")
+    Log.message("       Upper: " + str(rangeSet[1]) + "\n")
 elif probType == ProbType.SAFETY:
     Log.message("Reach Set \n")
     rangeSet = objStateSet.getRange()
@@ -312,3 +283,5 @@ elif probType == ProbType.SAFETY:
     else:
         Log.message("Safety Status: Safe \n")
 
+etime = time.time()
+print(etime - stime)

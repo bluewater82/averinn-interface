@@ -24,9 +24,9 @@ class NEWONNX(Parser, ABC):
     """
 
     def __init__(self, strFilePath: str):
-        self.__dictNeurons__: Dict[int, int] = self.__getDictNeurons__(l)
-        self.__dictWeights__: Dict[int, npt.ArrayLike] = self.__dictWeight__(W)
-        self.__dictBiases__: Dict[int, npt.ArrayLike] = self.__dictBias__(b)
+        self.__dictWeights__: Dict[int, npt.ArrayLike] = self.__extractDictWeights__(strFilePath)
+        self.__dictBiases__: Dict[int, npt.ArrayLike] = self.__extractDictBiases__(strFilePath)
+        self.__dictNeurons__: Dict[int, int] = self.__extractDictNeurons__()
 
     def getNetwork(self) -> GNN:
         """
@@ -52,6 +52,13 @@ class NEWONNX(Parser, ABC):
         :return: (dictWeights: Dict[int,npt.ArrayLike])
         """
         return self.__dictWeights__
+
+    def getDictBiases(self, boundType: BoundType) -> Dict[int, npt.ArrayLike]:
+        """
+        Get dictionary between layer number i starting from 2 and an array of biases at layer i
+        :return: (dictBiases: Dict[int,npt.ArrayLike])
+        """
+        return self.__dictBiases__
 
     def __get_attr_int__(self, node, name, default=0):
         for a in node.attribute:
@@ -88,3 +95,53 @@ class NEWONNX(Parser, ABC):
 
         return layers
 
+    def __extractDictWeights__(self, srtPath: str) -> Dict[int, npt.ArrayLike]:
+            """
+            :param strPath: path of the network file
+            :type strPath: str
+            """
+            dictWeight: Dict[int, npt] = dict()
+            layers = self.__extract_layerwise_Wb__(srtPath)
+            for i, (lname, W, b) in enumerate(layers):
+                tempW = []
+                if i == 0:
+                    for j in range(len(W)):
+                        tempW.append(W[j][0][0])
+                else:
+                    for j in range(len(W)):
+                        temp = []
+                        for k in range(len(W[j])):
+                            temp.append(W[j][k][0][0])
+                        tempW.append(temp)
+                dictWeight[i + 1] = np.array(tempW, dtype=np.float64)
+
+            return dictWeight
+
+    def __extractDictBiases__(self, srtPath: str) -> Dict[int, npt.ArrayLike]:
+        """
+        :param strPath: path of the network file
+        :type strPath: str
+        """
+        dictBias: Dict[int, npt] = dict()
+        layers = self.__extract_layerwise_Wb__(srtPath)
+        for i, (lname, W, b) in enumerate(layers):
+            dictBias[i+2] = np.array(b, dtype=np.float64)
+
+        return dictBias
+
+    def __extractDictNeurons__(self) -> Dict[int, int]:
+        """
+        Return dictionary of neurons at each layers
+        """
+        dictNeurons: Dict[int, int] = dict()
+        for key in self.__dictWeights__.keys():
+            row, col = self.__dictWeights__[key].shape
+            dictNeurons[key] = col
+            dictNeurons[key + 1] = row
+
+        return dictNeurons
+
+'''
+objONNX = NEWONNX("./../../resources/nncs-benchmarks/unicycle/controller.onnx")
+print(objONNX.getDictNeurons())
+'''

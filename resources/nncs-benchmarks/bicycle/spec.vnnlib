@@ -10,17 +10,17 @@
 (declare-const Y_2 Real)
 (declare-const Y_3 Real)
 
-(assert (<= X_0 0.1))
-(assert (>= X_0 -0.1))
+(assert (<= X_0 9.55))
+(assert (>= X_0 9.5))
 
-(assert (<= X_1 0.1))
-(assert (>= X_1 -0.1))
+(assert (<= X_1 -4.45))
+(assert (>= X_1 -4.5))
 
-(assert (<= X_2 0.05))
-(assert (>= X_2 -0.05))
+(assert (<= X_2 2.11))
+(assert (>= X_2 2.1))
 
-(assert (<= X_3 20.5))
-(assert (>= X_3 19.5))
+(assert (<= X_3 1.51))
+(assert (>= X_3 1.5))
 
 (assert (or
     (and (>= Y_3 40))
