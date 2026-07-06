@@ -10,7 +10,7 @@ AVERINN is a formal verification tool for proving safety properties of artificia
 ## Project Goals
 
 The browser interface aims to:
-- Simply execution of AVERINN verification jobs
+- Simplfy execution of AVERINN verification jobs
 - Automatically create custom configuration files based on user selections
 - Support multiple verification types/workflows
 - Validate user inputs before execution
