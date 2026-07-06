@@ -1,0 +1,30 @@
+digraph G {
+    rankdir=LR;
+    splines=line;
+    nodesep=0.5;
+    ranksep=1.5;
+
+    node [shape=circle];
+
+    subgraph cluster_input {
+        label="Input Layer";
+        s11 [label=<s<SUB>1,1</SUB>>];
+        s12 [label=<s<SUB>1,2</SUB>>];
+    }
+    subgraph cluster_hidden {
+        label="Hidden Layer";
+        s21 [label=<s<SUB>2,1</SUB>>];
+        s22 [label=<s<SUB>2,2</SUB>>];
+    }
+    subgraph cluster_output {
+        label="Output Layer";
+        s31 [label=<s<SUB>3,1</SUB>>];
+    }
+
+    s11 -> s21 [xlabel="0.73"]; 
+    s12 -> s21 [xlabel="0.88"];
+    s11 -> s22 [xlabel="0.52"];
+    s12 -> s22 [xlabel="0.90"];
+    s21 -> s31 [xlabel="0.37"];
+    s22 -> s31 [xlabel="1.00"];
+}

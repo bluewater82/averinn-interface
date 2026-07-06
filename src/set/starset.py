@@ -7,6 +7,7 @@ from typing import Tuple, Dict, List
 
 import numpy.typing as npt
 import numpy as np
+import gurobipy as gp
 from gurobipy import Model, Var, GRB, quicksum
 
 from src.set.intervalmatrix import IntervalMatrix
@@ -71,6 +72,73 @@ class StarSet(Set, ABC):
     ############################################
     ########## Methods for attributes  #########
     ############################################
+
+    def intersectHalfSpace(self, matA: npt.ArrayLike, arrayb: npt.ArrayLike, varName) -> 'StarSet':
+        """
+    Compute the exact intersection of the StarSet with linear constraints Ax <= b.
+    Uses Gurobi to discard infeasible intersections (empty sets).
+ 
+    :param matA: Matrix A of the constraints Ax <= b
+    :param arrayb: Vector b of the constraints Ax <= b
+    :return: A new StarSet representing the intersection, or None if empty.
+    """
+        if self.__matBasisV__ is None:
+            return None
+ 
+        # 1. Format inputs to prevent dimensional mismatch errors
+        matA = np.atleast_2d(matA)
+        arrayb = np.atleast_1d(arrayb).flatten()
+ 
+        # 2. Extract Center (c) and Basis Vectors (V)
+        center_c = self.__matBasisV__[:, 0]
+        basis_V = self.__matBasisV__[:, 1:]
+ 
+        # 3. Compute the symbolic intersection: (A * V) * alpha <= b - A * c
+        matA_alpha = matA @ basis_V
+        arrayb_alpha = arrayb - (matA @ center_c)
+ 
+        # 4. Concatenate new constraints with the existing predicate space (C*alpha <= d)
+        if self.__matConstraintC__ is None:
+            new_matC = matA_alpha
+            new_arrayd = arrayb_alpha
+        else:
+            new_matC = np.concatenate((self.__matConstraintC__, matA_alpha), axis=0)
+            new_arrayd = np.concatenate((self.__arrayConstraintd__, arrayb_alpha), axis=0)
+ 
+        # --- 5. GUROBI FEASIBILITY CHECK ---
+        num_vars = new_matC.shape[1]
+ 
+        # Create Gurobi environment and suppress output
+        env = gp.Env(empty=True)
+        env.setParam('OutputFlag', 0)
+        env.start()
+        model = gp.Model("Intersection_Check", env=env)
+        # model = gp.Model("Intersection_Check")
+        # Define alpha variables.
+        # CRITICAL: We set lb=-GRB.INFINITY because StarSet class already enforces the [-1, 1] bounds inside new_matC
+        alpha = model.addMVar(shape=num_vars, lb=-GRB.INFINITY, ub=GRB.INFINITY, name="alpha")
+ 
+        # Add the combined predicate constraints
+        model.addConstr(new_matC @ alpha <= new_arrayd, name="C_alpha_le_d")
+ 
+        # We only care about feasibility, so objective is 0
+        model.setObjective(0.0, GRB.MINIMIZE)
+        model.optimize()
+ 
+        # 6. Evaluate and Return
+        if model.status == GRB.OPTIMAL:
+            # The intersection is mathematically possible
+            # Return a new StarSet object with the updated predicate space
+            return StarSet(self.__matBasisV__, new_matC, new_arrayd)
+ 
+        elif model.status == GRB.INFEASIBLE:
+            # The half-space completely missed the Star set
+            return None
+ 
+        else:
+            raise RuntimeError(f"Gurobi solver failed with status code: {model.status}")
+        
+
     def getMatBasisV(self) -> npt.ArrayLike:
         """
         Return Basis interval matrix
@@ -188,7 +256,7 @@ class StarSet(Set, ABC):
         matBasisNewV: npt.ArrayLike = np.array(np.matmul(matLow, self.__matBasisV__))
 
         # shift the center, c' = c' + b
-        matBasisNewV[:, 0] = matBasisNewV[:, 0] + arrayLow
+        matBasisNewV[:, 0] = matBasisNewV[:, 0] + arrayLow.flatten()
 
         # Create affine map of X
         objStarSet: Set = StarSet(matBasisNewV, self.__matConstraintC__, self.__arrayConstraintd__)
@@ -380,6 +448,8 @@ class StarSet(Set, ABC):
         # The following line are for just returning (not for implementation)
         arrayHigh: npt.ArrayLike = np.array([], dtype=object)
         return arrayHigh
+    
+    
 
     ############################################
     ### Unused Methods from ISS ################

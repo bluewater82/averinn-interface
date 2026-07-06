@@ -12,5 +12,5 @@
 (assert (<= X_1 2))
 (assert (>= X_1 1))
 
-(assert  (>= Y_0 200))
-(assert  (>= Y_1 800))
+(assert  (>= Y_0 50))
+(assert  (>= Y_1 150))

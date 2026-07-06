@@ -1,0 +1,104 @@
+body {
+  width: 100%;
+  height: 100%;
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.top {
+  background-color: #0f025c;
+  font-family: 'Times New Roman', Times, serif;
+  padding: 1%;
+  width: 98%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tbleft {
+  padding-left: 30px;
+  float:left ;
+}
+
+.tbright {
+  font-size: small;
+  font-family: Arial, Helvetica, sans-serif;
+  padding-right: 30px;
+  float: right;
+}
+
+.top a {
+  color: white
+}
+
+.top a:hover {
+  color: gray
+}
+.body hr {
+  border: none;
+}
+.progressionLine{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 50%;
+  height: 10%;
+  margin: auto;
+}
+
+.progressionLine hr{
+  width: 100px;
+  margin:0;
+  border: 1px solid black;
+}
+
+
+.body img{
+  width: 5%;
+  height: 5%;
+}
+
+.formdiv {
+  height: 50%;
+  display: flex;
+  margin-left: 10%;
+  margin-right: 10%;
+  justify-content: space-evenly;
+}
+
+.formdiv form{
+  border: 1px solid lightgray;
+  height: 50%;
+  display: flex;
+  font-size: large;
+  flex-direction: column;
+  justify-content: space-evenly;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+#nfile, #sfile {
+  display: none;
+}
+
+#nfilelabel, #sfilelabel{
+  border: 1px dashed lightgray;
+  border-radius: 10px;
+  font-size: smaller;
+  height: 150px;
+  width: 300px;
+  cursor: pointer;
+  margin:10px
+}
+
+.lowerbody h2, .lowerbody h4{
+  margin:10px;
+  margin-left: 30px;
+}
+
+.lowerbody h4{
+  margin-bottom:50px;
+}
+

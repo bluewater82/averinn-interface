@@ -1,0 +1,41 @@
+.results-panel {
+    color: black;
+    padding: 10px;
+    text-align: center;
+}
+
+.results-panel h2 {
+    color: black;
+    font-weight: 800;
+}
+
+.set-summary-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.set-summary-card {
+    flex: 1;
+    border: 1px solid #d8dce3;
+    border-radius: 16px;
+    padding: 16px;
+    background-color: white;
+    text-align: left;
+}
+
+.set-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.set-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #d8dce3;
+}
+
+.set-table td:first-child {
+    font-weight: bold;
+    width: 60px;
+}
+

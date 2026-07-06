@@ -1,0 +1,223 @@
+.page {
+    text-align: left;
+    padding: 1px 40px;
+    color: black;
+    font-family: Inter, Arial, sans-serif;
+    
+}
+
+.page h1 {
+    color: black;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.page h2 {
+    color: black;
+    font-size: 18px;
+}
+
+.card-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 40px;
+}
+
+.card {
+    background-color: white;
+    color: black;
+    border: 2px solid #d8dce3;
+    border-radius: 16px;
+    padding: 24px;
+    flex: 1;
+    min-width: 280px;
+}
+
+.card h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.card label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+.card select {
+    background-color: white;
+    color: black;
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #cfd4dc;
+}
+
+.card input {
+    background-color: white;
+    color: black;
+}
+
+.topPage {
+    display: flex;
+    background-color: #01162f;
+}
+
+.topPage logo {
+    height: 64px;
+    width: auto;
+
+    /*margin-right: 16px;*/
+}
+
+.topPage h1 {
+    color: white;
+    font-family: 'Times New Roman', Times, serif;
+    padding-left: 10px;
+}
+
+.topPage p {
+    color: white;
+    padding-bottom: 10px;
+}
+
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.background {
+    background-color: white;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.form-row label {
+    margin: 0;
+    flex: 1;
+}
+
+.form-row select,
+.form-row input {
+    flex: 1;
+    max-width: 260px;
+}
+
+
+.bottom-panel {
+    background-color: white;
+    padding: 10px;
+}
+
+.section-divider {
+    border: none;
+    border-top: 2px solid #d8dce3;
+    margin: 4px 0;
+}
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 28px 200px;
+    background-color: white;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: black;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.circle {
+    width: 34px;
+    height: 34px;
+    border: 2px solid #cfd4dc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #0057d9;
+    background-color: white;
+}
+
+.step.complete .circle {
+    background-color: #0057d9;
+    border-color: #0057d9;
+    color: white;
+}
+
+.step.active {
+    color: #0057d9;
+}
+
+.step.active .circle {
+    border-color: #0057d9;
+    color: #0057d9;
+}
+
+.line {
+    height: 2px;
+    width: 100px;
+    background-color: #cfd4dc;
+}
+
+.complete-line {
+    background-color: #0057d9;
+}
+
+.results-panel {
+    color: black;
+    padding: 10px;
+}
+
+.results-panel h2 {
+    color: black;
+    font-weight: bolder;
+}
+
+.set-summary-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.set-summary-card {
+    flex: 1;
+    border: 1px solid #d8dce3;
+    border-radius: 16px;
+    padding: 16px;
+    background-color: white;
+}
+
+.set-summary-card pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.set-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.set-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #d8dce3;
+}
+
+.set-table td:first-child {
+    font-weight: bold;
+    width: 60px;
+}

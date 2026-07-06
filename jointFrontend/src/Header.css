@@ -1,0 +1,30 @@
+.app-header {
+    background-color: #01162f;
+}
+
+.help-button {
+    padding-right: 50px;
+    color: white;
+    background: none;
+    border: none;
+}
+
+.app-logo {
+    height: 96px;
+    width: auto;
+    object-fit: contain;
+    background-color: black;
+}
+
+.app-title {
+    color: white;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 48px;
+    margin-bottom: 0;
+}
+
+.app-subtitle {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 0;
+}

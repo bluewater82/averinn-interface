@@ -223,5 +223,7 @@ elif probType == ProbType.SAFETY:
     isIntersect: bool = SetUTS.intersectWithUnsafe(objStateSet, outputConstr, solverType, 'Y')
     if isIntersect:
         Log.message("Safety Status: Unsafe \n")
+        print("Safety Status: Unsafe \n")
     else:
         Log.message("Safety Status: Safe \n")
+        print("Safety Status: Safe \n")

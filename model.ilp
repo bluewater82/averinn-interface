@@ -1,0 +1,10 @@
+\ Model _copy_copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+Maximize
+ 
+Subject To
+ R0: X_1 >= 87.55704218235789
+ R10: X_1 <= 10
+Bounds
+ X_1 free
+End

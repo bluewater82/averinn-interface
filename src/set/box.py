@@ -5,6 +5,7 @@ Date : November 18, 2024
 from abc import ABC
 from typing import List, Tuple, Dict
 import numpy as np
+import gurobipy as gp
 import numpy.typing as npt
 from gurobipy import Model, Var, GRB
 
@@ -277,6 +278,9 @@ class Box(Set, ABC):
             sign = Sign.BOTH
 
         return sign
+    
+
+    
 
     def __encode__(self, varName: str) -> Tuple[Model, Dict[int, Dict[int, Var]]]:
         """"
@@ -308,6 +312,9 @@ class Box(Set, ABC):
     ############################################
     ###### Unused Methods from other sets  #####
     ############################################
+
+
+    
     def getIMatBasisV(self) -> IntervalMatrix:
         """
         Return Basis interval matrix
@@ -420,3 +427,49 @@ class Box(Set, ABC):
     ############################################
     ########## Unused Common Methods ###########
     ############################################
+
+    def intersectHalfSpace(self, A: npt.ArrayLike, b: npt.ArrayLike, varName) -> Set:
+        """
+        Intersects the Box with a set of linear constraints Ax <= b.
+        Returns a new Box with tightened bounds.
+        """
+        # 1. Get the Gurobi model representing the current Box bounds
+        grbModel, dictVars = self.getModelVars(varName)
+        vars_dict = dictVars[1]
+        grbModel.setParam('OutputFlag', 0)  # Suppress Gurobi output
+ 
+        # 2. Add the linear constraints: Ax <= b
+        # A is (num_constraints x dim), b is (num_constraints,)
+        num_constraints = A.shape[0]
+        dim = self.getDimension()
+ 
+        for i in range(num_constraints):
+            grbModel.addConstr(
+                sum(A[i, j] * vars_dict[j + 1] for j in range(dim)) <= b[i], name=f"region_dim_{i}"
+            )
+ 
+        grbModel.update()
+        grbModel.write("my_constraints.lp")
+        # 3. Optimize to find the new tightest bounds (Box Tightening)
+        new_low = np.zeros(dim)
+        new_high = np.zeros(dim)
+ 
+        for i in range(1, dim + 1):
+            # Find new Lower Bound
+            grbModel.setObjective(vars_dict[i], GRB.MINIMIZE)
+            grbModel.optimize()
+            # CHECK STATUS FIRST
+            if grbModel.Status == GRB.OPTIMAL:
+                new_low[i - 1] = grbModel.ObjVal
+            elif grbModel.Status == GRB.INFEASIBLE:
+                # If any dimension is infeasible, the whole intersection is empty
+                return None
+            # Find new Upper Bound
+            grbModel.setObjective(vars_dict[i], GRB.MAXIMIZE)
+            grbModel.optimize()
+            if grbModel.Status == GRB.OPTIMAL:
+                new_high[i - 1] = grbModel.ObjVal
+            else:
+                return None
+        objSetIPHS: Set = Box(new_low, new_high)
+        return objSetIPHS
