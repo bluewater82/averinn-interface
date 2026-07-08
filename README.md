@@ -66,6 +66,43 @@ New features are being added as part of ongoing research into improving the usab
 
 ![results](./media/resultsScreen.png)
 
+## How to Run
+
+These instructions assume you are starting from a fresh clone of the repository.
+
+### 1. Clone the repository
+
+```
+git clone ,repo-url>
+cd <repo-name>
+```
+
+### 2. Set up the Python backend
+
+From the project root, create and activate a virtual environment:
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the backend dependencies:
+
+```
+pip install --upgrade pip
+pip install fastapi uvicorn python-multipart
+pip install -r requirements.txt
+```
+
+Start the backend server:
+
+```
+cd backend
+uvicorn main:app --reload
+```
+
+### 3. Set up the React frontend
+
 ## Future Development
 
 Planned future improvements include:
