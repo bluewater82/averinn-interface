@@ -5,27 +5,7 @@ import ProgressSteps from "./ProgressSteps";
 import SettingsSection from "./SettingsSection";
 import UploadCard from "./UploadCard";
 import ResultsPanel from "./ResultsPanel";
-// import UploadSlx from "./UploadSlx.jsx"
-import NavButtonPanel from "./NavButtonPanel.jsx"
-import ControlTypeCard from "./ControlTypeCard.jsx";
-
-/*************************************************************
- * App.jsx
- * 
- * Main application component for the AVERINN frontend.
- * 
- * Responsibilities:
- *  - Maintains global application state
- *  - Controls navigation between verification stages
- *  - Coordinates communication with FastAPI backend
- *  - Passes shared state to child components
- * 
- * Workflow:
- *  - Header->Progress Bar->Current Verification Page->Results
- * 
- *************************************************************/
-
-
+import VerifTypePanel from "./VerifTypePanel.jsx";
 
 function App() {
     const [backendStatus, setBackendStatus] = useState(null);
@@ -42,11 +22,10 @@ function App() {
         solverType: "Gurobi"
     });
 
-    const [currentNetType, setNetType] = useState("Dynamic");
-
     const [dynamicsFile, setDynamicsFile] = useState(null);
-    const [currentType, setCurrentType] = useState(0); // Verification type
-    const [currentStep, setCurrentStep] = useState(2);
+    const [currentType, setCurrentType] = useState(0);
+    const [currentStep, setCurrentStep] = useState(1);
+
     const [networkFormat, setNetworkFormat] = useState("ONNX");
     const [networkFile, setNetworkFile] = useState(null);
 
@@ -73,11 +52,10 @@ function App() {
 
         const data = await response.json();
         setBackendStatus(data);
+        setCurrentStep(4);
     }
 
     return (
-
-    
         <div className="background">
             <Header />
 
@@ -86,64 +64,72 @@ function App() {
                 setCurrentStep={setCurrentStep}
             />
 
-            {currentType === 0 &&
-                (currentStep === 1 && (
-                    <h1 className="generic-h1">Body for first page</h1>
-                ) ) ||
+            {currentType === 0 && (
+                <>
+                    {currentStep === 1 && (
+                        <div>
+                            <h1 className="h3 fw-bold text-center">
+                                Select Verification Type
+                            </h1>
 
-                (currentStep === 2 && (
-                    <section className="container py-4">
+                            <VerifTypePanel />
 
-                        <h1 className="h3 fw-bold">Neural Network Property Checking</h1>
+                            <hr className="section-divider" />
 
-                        <p className="fs-5">
-                            Provide the model and property file to continue.
-                        </p>
-
-                        
-                        
-                        <div className="row g-4 mt-3">
-
-                            <div className="col-lg-4">
-                                <ControlTypeCard 
-                                    currentNetType={currentNetType}
-                                    setNetType={setNetType}
-                                />
+                            <div className="bottom-panel d-flex justify-content-center">
+                                <button
+                                    onClick={() => setCurrentStep(2)}
+                                    className="btn btn-primary px-4"
+                                >
+                                    Upload Files
+                                </button>
                             </div>
+                        </div>
+                    )}
 
-                            <div className="col-12 col-lg-4">
-                                <UploadCard
-                                    title="Neural Network"
-                                    formatLabel="Format"
-                                    formatValue={networkFormat}
-                                    formatOptions={["ONNX", "SHERLOCK", "NNET"]}
-                                    onFormatChange={setNetworkFormat}
-                                    fileLabel="Model file"
-                                    file={networkFile}
-                                    onFileChange={setNetworkFile}
-                                    acceptedFileTypes=".onnx,.nnet,.sherlock"
-                                    primaryButtonText="Preview Network"
-                                    secondaryButtonText="Validate Network"
-                                />
-                            </div>
+                    {currentStep === 2 && (
+                        <section className="container py-4">
+                            <h1 className="h3 fw-bold">
+                                Neural Network Property Checking
+                            </h1>
 
-                            <div className="col-12 col-lg-4">
-                                <UploadCard
-                                    title="Property Specification"
-                                    formatLabel="Specification type"
-                                    formatValue={propertyType}
-                                    formatOptions={["VNNLIB"]}
-                                    onFormatChange={setPropertyType}
-                                    fileLabel="Property file"
-                                    file={propertyFile}
-                                    onFileChange={setPropertyFile}
-                                    acceptedFileTypes=".vnnlib"
-                                    primaryButtonText="View Property"
-                                    secondaryButtonText="Validate Property"
-                                />
-                            </div>
+                            <p className="fs-5">
+                                Provide the model and property file to continue.
+                            </p>
 
-                            {currentNetType === "Dynamic" && (
+                            <div className="row g-4 mt-3">
+                                <div className="col-12 col-lg-4">
+                                    <UploadCard
+                                        title="Neural Network"
+                                        formatLabel="Format"
+                                        formatValue={networkFormat}
+                                        formatOptions={["ONNX", "SHERLOCK", "NNET"]}
+                                        onFormatChange={setNetworkFormat}
+                                        fileLabel="Model file"
+                                        file={networkFile}
+                                        onFileChange={setNetworkFile}
+                                        acceptedFileTypes=".onnx,.nnet,.sherlock"
+                                        primaryButtonText="Preview Network"
+                                        secondaryButtonText="Validate Network"
+                                    />
+                                </div>
+
+                                <div className="col-12 col-lg-4">
+                                    <UploadCard
+                                        title="Property Specification"
+                                        formatLabel="Specification type"
+                                        formatValue={propertyType}
+                                        formatOptions={["VNNLIB"]}
+                                        onFormatChange={setPropertyType}
+                                        fileLabel="Property file"
+                                        file={propertyFile}
+                                        onFileChange={setPropertyFile}
+                                        acceptedFileTypes=".vnnlib"
+                                        primaryButtonText="View Property"
+                                        secondaryButtonText="Validate Property"
+                                    />
+                                </div>
+
                                 <div className="col-12 col-lg-4">
                                     <UploadCard
                                         title="Dynamics File"
@@ -159,63 +145,77 @@ function App() {
                                         secondaryButtonText="Validate Dynamics"
                                     />
                                 </div>
-                            )}
+                            </div>
 
                             <hr className="section-divider" />
 
                             <div className="bottom-panel d-flex justify-content-between">
-
-                                <button onClick={() => setCurrentStep(1)} className="btn btn-primary px-4">
+                                <button
+                                    onClick={() => setCurrentStep(1)}
+                                    className="btn btn-primary px-4"
+                                >
                                     Previous Page
                                 </button>
-                                <button onClick={() => setCurrentStep(3)} className="btn btn-primary px-4">
+
+                                <button
+                                    onClick={() => setCurrentStep(3)}
+                                    className="btn btn-primary px-4"
+                                >
                                     Continue to Settings
                                 </button>
                             </div>
+                        </section>
+                    )}
 
-                        </div>
+                    {currentStep === 3 && (
+                        <section className="container py-4">
+                            <SettingsSection
+                                settings={settings}
+                                setSettings={setSettings}
+                            />
 
-                    </section>
-                )) ||
-                
-                (currentStep === 3 && (
-                    <>
-                        <SettingsSection
-                            settings={settings}
-                            setSettings={setSettings}
-                        />
-                        <hr className="section-divider" />
+                            <hr className="section-divider" />
 
-                        <div className="bottom-panel d-flex justify-content-between">
+                            <div className="bottom-panel d-flex justify-content-between">
+                                <button
+                                    onClick={() => setCurrentStep(2)}
+                                    className="btn btn-primary px-4"
+                                >
+                                    Previous Page
+                                </button>
 
-                            <button onClick={() => setCurrentStep(2)} className="btn btn-primary px-4">
-                                Previous Page
-                            </button>
-                            <button onClick={callAPI} className="btn btn-primary px-4">
-                                Start Verification
-                            </button>
-                        </div>
+                                <button
+                                    onClick={callAPI}
+                                    className="btn btn-primary px-4"
+                                >
+                                    Start Verification
+                                </button>
+                            </div>
+                        </section>
+                    )}
 
-                        
+                    {currentStep === 4 && (
+                        <section className="container py-4">
+                            <h1 className="h3 fw-bold text-center">
+                                Analysis Results
+                            </h1>
 
-                        <hr className="section-divider" />
+                            <ResultsPanel backendStatus={backendStatus} />
 
-                        <ResultsPanel backendStatus={backendStatus} />
-                    
-                    </>
+                            <hr className="section-divider" />
 
-                ))
-            }
-            { currentType === 4 &&
-                (currentStep === 0 && (
-                    <UploadSlx 
-                        part={currentStep} 
-                        setPart={setCurrentStep}
-                    />
-                    )
-                    
-                )
-            }
+                            <div className="bottom-panel d-flex justify-content-start">
+                                <button
+                                    onClick={() => setCurrentStep(3)}
+                                    className="btn btn-primary px-4"
+                                >
+                                    Previous Page
+                                </button>
+                            </div>
+                        </section>
+                    )}
+                </>
+            )}
         </div>
     );
 }

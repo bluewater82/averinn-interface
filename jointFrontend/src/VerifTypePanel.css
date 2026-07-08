@@ -1,0 +1,62 @@
+
+
+.verif-type-card {
+    width: 180px;
+    height: 180px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 10px;
+
+    border: 2px solid rgba(128, 128, 128, 0.466);
+    border-radius: 16px;
+    background: white;
+    color: black;
+}
+
+.verif-type-card span {
+    text-align: center;
+    line-height: 1.2;
+}
+
+.type-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.icon-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-icon {
+    width: 64px;
+    height: 64px;
+}
+
+.overlay-icon {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    right: -20px;
+    top: 0%;
+}
+
+.icon-stack {
+    position: relative;
+    width: 64px;
+    height: 64px;
+}
+
+.verification-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 180px);
+    gap: 40px;
+    justify-content: center;
+}

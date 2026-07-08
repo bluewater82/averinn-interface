@@ -17,7 +17,7 @@
 
 .set-summary-card {
     flex: 1;
-    border: 1px solid #d8dce3;
+    border: 2px solid rgba(128, 128, 128, 0.466);
     border-radius: 16px;
     padding: 16px;
     background-color: white;
@@ -31,7 +31,7 @@
 
 .set-table td {
     padding: 6px 8px;
-    border-bottom: 1px solid #d8dce3;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.466);
 }
 
 .set-table td:first-child {

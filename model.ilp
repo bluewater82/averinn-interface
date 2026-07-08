@@ -3,7 +3,7 @@
 Maximize
  
 Subject To
- R0: X_1 >= 87.55704218235789
+ R0: X_1 >= 146.2885589173147
  R10: X_1 <= 10
 Bounds
  X_1 free

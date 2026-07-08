@@ -20,7 +20,7 @@ ALLOWED_EXTENSIONS = {
         ".isherlock"
     },
     "property": {".vnnlib"},
-    "dynamics": {".py"}
+    "dynamics": {".ini"}
 }
 
 app.add_middleware(
