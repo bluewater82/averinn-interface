@@ -23,7 +23,7 @@ function App() {
     });
 
     const [dynamicsFile, setDynamicsFile] = useState(null);
-    const [currentType, setCurrentType] = useState(0);
+    const [verificationType, setVerificationType] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
 
     const [networkFormat, setNetworkFormat] = useState("ONNX");
@@ -31,6 +31,14 @@ function App() {
 
     const [propertyType, setPropertyType] = useState("VNNLIB");
     const [propertyFile, setPropertyFile] = useState(null);
+
+    function handleVerificationTypeSelection(type) {
+        setVerificationType(type);
+
+        if (type === "nn" || type === "nncs") {
+            setCurrentStep(2);
+        }
+    }
 
     async function callAPI() {
         const formData = new FormData();
@@ -43,7 +51,10 @@ function App() {
 
         formData.append("network_file", networkFile);
         formData.append("property_file", propertyFile);
-        formData.append("dynamics_file", dynamicsFile);
+
+        if (verificationType === "nncs") {
+            formData.append("dynamics_file", dynamicsFile);
+        }
 
         const response = await fetch("http://localhost:8000/run-nncs-averinn", {
             method: "POST",
@@ -64,160 +75,148 @@ function App() {
                 setCurrentStep={setCurrentStep}
             />
 
-            {currentType === 0 && (
-                <>
-                    {currentStep === 1 && (
-                        <div>
-                            <h1 className="h3 fw-bold text-center">
-                                Select Verification Type
-                            </h1>
+            {currentStep === 1 && (
+                <div>
+                    <h1 className="h3 fw-bold text-center">
+                        Select Verification Type
+                    </h1>
 
-                            <VerifTypePanel />
+                    <VerifTypePanel onSelectType={handleVerificationTypeSelection} />
+                </div>
+            )}
 
-                            <hr className="section-divider" />
+            {currentStep === 2 && (
+                <section className="container py-4">
+                    <h1 className="h3 fw-bold">
+                        Neural Network Property Checking
+                    </h1>
 
-                            <div className="bottom-panel d-flex justify-content-center">
-                                <button
-                                    onClick={() => setCurrentStep(2)}
-                                    className="btn btn-primary px-4"
-                                >
-                                    Upload Files
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    <p className="fs-5">
+                        Provide the model and property file to continue.
+                    </p>
 
-                    {currentStep === 2 && (
-                        <section className="container py-4">
-                            <h1 className="h3 fw-bold">
-                                Neural Network Property Checking
-                            </h1>
-
-                            <p className="fs-5">
-                                Provide the model and property file to continue.
-                            </p>
-
-                            <div className="row g-4 mt-3">
-                                <div className="col-12 col-lg-4">
-                                    <UploadCard
-                                        title="Neural Network"
-                                        formatLabel="Format"
-                                        formatValue={networkFormat}
-                                        formatOptions={["ONNX", "SHERLOCK", "NNET"]}
-                                        onFormatChange={setNetworkFormat}
-                                        fileLabel="Model file"
-                                        file={networkFile}
-                                        onFileChange={setNetworkFile}
-                                        acceptedFileTypes=".onnx,.nnet,.sherlock"
-                                        primaryButtonText="Preview Network"
-                                        secondaryButtonText="Validate Network"
-                                    />
-                                </div>
-
-                                <div className="col-12 col-lg-4">
-                                    <UploadCard
-                                        title="Property Specification"
-                                        formatLabel="Specification type"
-                                        formatValue={propertyType}
-                                        formatOptions={["VNNLIB"]}
-                                        onFormatChange={setPropertyType}
-                                        fileLabel="Property file"
-                                        file={propertyFile}
-                                        onFileChange={setPropertyFile}
-                                        acceptedFileTypes=".vnnlib"
-                                        primaryButtonText="View Property"
-                                        secondaryButtonText="Validate Property"
-                                    />
-                                </div>
-
-                                <div className="col-12 col-lg-4">
-                                    <UploadCard
-                                        title="Dynamics File"
-                                        formatLabel="Format"
-                                        formatValue="INI"
-                                        formatOptions={["INI"]}
-                                        onFormatChange={() => {}}
-                                        fileLabel="Dynamics file"
-                                        file={dynamicsFile}
-                                        onFileChange={setDynamicsFile}
-                                        acceptedFileTypes=".ini"
-                                        primaryButtonText="View Dynamics"
-                                        secondaryButtonText="Validate Dynamics"
-                                    />
-                                </div>
-                            </div>
-
-                            <hr className="section-divider" />
-
-                            <div className="bottom-panel d-flex justify-content-between">
-                                <button
-                                    onClick={() => setCurrentStep(1)}
-                                    className="btn btn-primary px-4"
-                                >
-                                    Previous Page
-                                </button>
-
-                                <button
-                                    onClick={() => setCurrentStep(3)}
-                                    className="btn btn-primary px-4"
-                                >
-                                    Continue to Settings
-                                </button>
-                            </div>
-                        </section>
-                    )}
-
-                    {currentStep === 3 && (
-                        <section className="container py-4">
-                            <SettingsSection
-                                settings={settings}
-                                setSettings={setSettings}
+                    <div className="row g-4 mt-3">
+                        <div className={verificationType === "nncs" ? "col-12 col-lg-4" : "col-12 col-lg-6"}>
+                            <UploadCard
+                                title="Neural Network"
+                                formatLabel="Format"
+                                formatValue={networkFormat}
+                                formatOptions={["ONNX", "SHERLOCK", "NNET"]}
+                                onFormatChange={setNetworkFormat}
+                                fileLabel="Model file"
+                                file={networkFile}
+                                onFileChange={setNetworkFile}
+                                acceptedFileTypes=".onnx,.nnet,.sherlock"
+                                primaryButtonText="View Network"
+                                secondaryButtonText="Validate Network"
                             />
+                        </div>
 
-                            <hr className="section-divider" />
+                        <div className={verificationType === "nncs" ? "col-12 col-lg-4" : "col-12 col-lg-6"}>
+                            <UploadCard
+                                title="Property Specification"
+                                formatLabel="Specification type"
+                                formatValue={propertyType}
+                                formatOptions={["VNNLIB"]}
+                                onFormatChange={setPropertyType}
+                                fileLabel="Property file"
+                                file={propertyFile}
+                                onFileChange={setPropertyFile}
+                                acceptedFileTypes=".vnnlib"
+                                primaryButtonText="View Property"
+                                secondaryButtonText="Validate Property"
+                            />
+                        </div>
 
-                            <div className="bottom-panel d-flex justify-content-between">
-                                <button
-                                    onClick={() => setCurrentStep(2)}
-                                    className="btn btn-primary px-4"
-                                >
-                                    Previous Page
-                                </button>
-
-                                <button
-                                    onClick={callAPI}
-                                    className="btn btn-primary px-4"
-                                >
-                                    Start Verification
-                                </button>
+                        {verificationType === "nncs" && (
+                            <div className="col-12 col-lg-4">
+                                <UploadCard
+                                    title="Dynamics File"
+                                    formatLabel="Format"
+                                    formatValue="INI"
+                                    formatOptions={["INI"]}
+                                    onFormatChange={() => {}}
+                                    fileLabel="Dynamics file"
+                                    file={dynamicsFile}
+                                    onFileChange={setDynamicsFile}
+                                    acceptedFileTypes=".ini"
+                                    primaryButtonText="View Dynamics"
+                                    secondaryButtonText="Validate Dynamics"
+                                />
                             </div>
-                        </section>
-                    )}
+                        )}
+                    </div>
 
-                    {currentStep === 4 && (
-                        <section className="container py-4">
-                            <h1 className="h3 fw-bold text-center">
-                                Analysis Results
-                            </h1>
+                    <hr className="section-divider" />
 
-                            <ResultsPanel backendStatus={backendStatus} />
+                    <div className="bottom-panel d-flex justify-content-between">
+                        <button
+                            onClick={() => setCurrentStep(1)}
+                            className="btn btn-primary px-4"
+                        >
+                            Previous Page
+                        </button>
 
-                            <hr className="section-divider" />
+                        <button
+                            onClick={() => setCurrentStep(3)}
+                            className="btn btn-primary px-4"
+                        >
+                            Continue to Settings
+                        </button>
+                    </div>
+                </section>
+            )}
 
-                            <div className="bottom-panel d-flex justify-content-start">
-                                <button
-                                    onClick={() => setCurrentStep(3)}
-                                    className="btn btn-primary px-4"
-                                >
-                                    Previous Page
-                                </button>
-                            </div>
-                        </section>
-                    )}
-                </>
+            {currentStep === 3 && (
+                <section className="container py-4">
+                    <SettingsSection
+                        settings={settings}
+                        setSettings={setSettings}
+                    />
+
+                    <hr className="section-divider" />
+
+                    <div className="bottom-panel d-flex justify-content-between">
+                        <button
+                            onClick={() => setCurrentStep(2)}
+                            className="btn btn-primary px-4"
+                        >
+                            Previous Page
+                        </button>
+
+                        <button
+                            onClick={callAPI}
+                            className="btn btn-primary px-4"
+                        >
+                            Start Verification
+                        </button>
+                    </div>
+                </section>
+            )}
+
+            {currentStep === 4 && (
+                <section className="container py-4">
+                    <h1 className="h3 fw-bold text-center">
+                        Analysis Results
+                    </h1>
+
+                    <ResultsPanel backendStatus={backendStatus} />
+
+                    <hr className="section-divider" />
+
+                    <div className="bottom-panel d-flex justify-content-start">
+                        <button
+                            onClick={() => setCurrentStep(3)}
+                            className="btn btn-primary px-4"
+                        >
+                            Previous Page
+                        </button>
+                    </div>
+                </section>
             )}
         </div>
     );
 }
 
 export default App;
+

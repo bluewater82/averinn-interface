@@ -19,7 +19,7 @@
 
 .verif-type-card span {
     text-align: center;
-    line-height: 1.2;
+    line-height: 0.5;
 }
 
 .type-icon {
@@ -28,30 +28,10 @@
     object-fit: contain;
 }
 
-.icon-group {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    align-items: center;
-}
-
-.main-icon {
-    width: 64px;
-    height: 64px;
-}
-
-.overlay-icon {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    right: -20px;
-    top: 0%;
-}
-
-.icon-stack {
-    position: relative;
-    width: 64px;
-    height: 64px;
+.type-icon-enlarge {
+    width: 100x;
+    height: 100px;
+    object-fit: contain;
 }
 
 .verification-grid {

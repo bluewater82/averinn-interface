@@ -58,11 +58,13 @@ New features are being added as part of ongoing research into improving the usab
 
 ## Screenshots
 
-![uploadcards](uploaddemo.png)
+![verifScreen](./media/verifScreen.png)
 
-![properties](propertiesdemo.png)
+![uploadcards](./media/uploadScreen.png)
 
-![results](resultsdemo.png)
+![properties](./media/settingsScreen.png)
+
+![results](./media/resultsScreen.png)
 
 ## Future Development
 
@@ -81,4 +83,4 @@ This interface is built on top of the existing AVERINN verification framework. I
 
 This repo currently contains work developed for academic research.
 
-Please consult the original AVERINN project (github.com/ratanlal02/AVERINN) regarding licensing before attempting to redistributing or incorporating the underlying framework into other projects.
+Please consult the original AVERINN project (github.com/ratanlal02/AVERINN) regarding licensing before attempting to redistribute or incorporate the underlying framework into other projects.
