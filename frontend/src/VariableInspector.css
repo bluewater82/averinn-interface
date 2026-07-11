@@ -1,0 +1,252 @@
+.variable-inspector {
+    margin: 34px 0;
+    padding: 26px;
+
+    background-color: white;
+    border: 1px solid rgba(30, 41, 59, 0.16);
+    border-radius: 16px;
+    box-shadow:
+        0 2px 5px rgba(15, 23, 42, 0.04),
+        0 12px 28px rgba(15, 23, 42, 0.06);
+
+    color: #172033;
+    text-align: left;
+}
+
+.variable-inspector-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.variable-inspector-header h2 {
+    margin: 2px 0 6px;
+    font-size: 1.45rem;
+    font-weight: 800;
+}
+
+.variable-inspector-header p:last-child {
+    margin: 0;
+    color: #687386;
+}
+
+.variable-inspector-badge {
+    padding: 7px 12px;
+
+    background-color: #eef4ff;
+    border: 1px solid #bdd4fa;
+    border-radius: 999px;
+
+    color: #174ea6;
+    font-size: 0.82rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.variable-inspector-metrics {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.inspector-metric {
+    display: flex;
+    flex-direction: column;
+    min-height: 112px;
+    padding: 16px;
+
+    background-color: #f7f9fc;
+    border: 1px solid #dce3ec;
+    border-radius: 12px;
+}
+
+.inspector-metric-label {
+    color: #687386;
+    font-size: 0.76rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.inspector-metric-value {
+    margin-top: 8px;
+
+    color: #172033;
+    font-size: 1.4rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.inspector-metric-detail {
+    margin-top: auto;
+    padding-top: 6px;
+
+    color: #687386;
+    font-size: 0.82rem;
+}
+
+.variable-history {
+    display: flex;
+    flex-direction: column;
+}
+
+.variable-stage {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 14px;
+}
+
+.variable-stage-marker {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.variable-stage-dot {
+    position: relative;
+    z-index: 2;
+
+    width: 14px;
+    height: 14px;
+    margin-top: 7px;
+
+    background-color: #8190a5;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #8190a5;
+}
+
+.variable-stage-dot--initial {
+    background-color: #64748b;
+    box-shadow: 0 0 0 2px #64748b;
+}
+
+.variable-stage-dot--final {
+    background-color: #1463df;
+    box-shadow: 0 0 0 2px #1463df;
+}
+
+.variable-stage-line {
+    position: absolute;
+    top: 22px;
+    bottom: -7px;
+
+    width: 2px;
+    background-color: #d5dde8;
+}
+
+.variable-stage-content {
+    margin-bottom: 22px;
+    padding: 0 0 22px;
+    border-bottom: 1px solid #e1e6ed;
+}
+
+.variable-stage:last-child .variable-stage-content {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.variable-stage-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 12px;
+}
+
+.variable-stage-heading h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.variable-stage-heading span {
+    color: #758195;
+    font-size: 0.78rem;
+}
+
+.variable-stage-values {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.variable-stage-value {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.variable-stage-value span {
+    color: #758195;
+    font-size: 0.75rem;
+}
+
+.variable-stage-value strong {
+    color: #263348;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.variable-inspector-comparison {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 26px;
+    padding: 18px;
+
+    background-color: #f7f9fc;
+    border: 1px solid #dce3ec;
+    border-radius: 12px;
+}
+
+.variable-inspector-comparison div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+}
+
+.variable-inspector-comparison span {
+    color: #687386;
+    font-size: 0.78rem;
+}
+
+.variable-inspector-comparison strong {
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.variable-comparison-arrow {
+    color: #1463df !important;
+    font-size: 1.5rem !important;
+    font-weight: 800;
+}
+
+@media (max-width: 900px) {
+    .variable-inspector-metrics,
+    .variable-stage-values {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .variable-inspector {
+        padding: 18px;
+    }
+
+    .variable-inspector-header {
+        flex-direction: column;
+    }
+
+    .variable-inspector-metrics,
+    .variable-stage-values {
+        grid-template-columns: 1fr;
+    }
+}

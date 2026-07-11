@@ -74,27 +74,163 @@ app.add_middleware(
 # Helper Functions
 # ==========================================================
 
-# Reads the CSV file generated from AVERINN and creates a summary that the
-# frontend will use for displaying results to the user.
-#
-# Only the initial and final sets for each run/loop are returned rather than
-# sending the entire CSV contents over the API.
 def summarize_csv(csv_path: Path):
+    """
+    Convert an AVERINN CSV into a semantic results model.
+
+    Expected CSV structure:
+
+        "", 0Low, 0High, 1Low, 1High, ...
+
+    Each row represents one state variable.
+    Each numbered Low/High pair represents one reachable set.
+    """
+
     if not csv_path.exists():
         return None
 
-    with open(csv_path, newline="") as file:
+    with open(csv_path, newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         rows = list(reader)
+        columns = reader.fieldnames or []
 
-    if not rows:
+    if not rows or not columns:
         return None
 
+    variable_column = columns[0]
+
+    # Discover all numbered Low/High column pairs.
+    set_indices = sorted({
+        int(column.removesuffix("Low"))
+        for column in columns
+        if (
+            column.endswith("Low")
+            and column.removesuffix("Low").isdigit()
+            and f"{column.removesuffix('Low')}High" in columns
+        )
+    })
+
+    if not set_indices:
+        return None
+
+    variables = []
+
+    for row_position, row in enumerate(rows):
+        raw_variable_index = row.get(variable_column, row_position)
+
+        try:
+            variable_index = int(float(raw_variable_index))
+        except (TypeError, ValueError):
+            variable_index = row_position
+
+        history = []
+
+        for set_position, set_index in enumerate(set_indices):
+            low_column = f"{set_index}Low"
+            high_column = f"{set_index}High"
+
+            try:
+                low = float(row[low_column])
+                high = float(row[high_column])
+            except (TypeError, ValueError, KeyError):
+                continue
+
+            if set_position == 0:
+                label = "Initial Set"
+                short_label = "Initial"
+            elif set_position == len(set_indices) - 1:
+                label = "Final Set"
+                short_label = "Final"
+            else:
+                label = f"Intermediate Set {set_position}"
+                short_label = f"Step {set_position}"
+
+            history.append({
+                "set_index": set_index,
+                "position": set_position,
+                "label": label,
+                "short_label": short_label,
+                "low": low,
+                "high": high,
+                "width": high - low,
+                "center": (low + high) / 2
+            })
+
+        if history:
+            initial_interval = history[0]
+            final_interval = history[-1]
+
+            initial_width = initial_interval["width"]
+            final_width = final_interval["width"]
+            width_change = final_width - initial_width
+
+            width_change_percent = (
+                (width_change / initial_width) * 100
+                if initial_width != 0
+                else None
+            )
+
+            variables.append({
+                "name": f"x{variable_index}",
+                "index": variable_index,
+                "history": history,
+                "initial_width": initial_width,
+                "final_width": final_width,
+                "width_change": width_change,
+                "width_change_percent": width_change_percent,
+                "center_shift": (
+                    final_interval["center"]
+                    - initial_interval["center"]
+                )
+            })
+
+    variables.sort(key=lambda variable: variable["index"])
+
+    if not variables:
+        return None
+
+    final_widths = [
+        variable["final_width"]
+        for variable in variables
+    ]
+
+    widest_final_variable = max(
+        variables,
+        key=lambda variable: variable["final_width"]
+    )
+
+    narrowest_final_variable = min(
+        variables,
+        key=lambda variable: variable["final_width"]
+    )
+
+    all_widths = [
+        interval["width"]
+        for variable in variables
+        for interval in variable["history"]
+    ]
+
     return {
-        "row_count": len(rows),
-        "columns": reader.fieldnames,
-        "initial_set": rows[0],
-        "final_set": rows[-1]
+        "variable_count": len(variables),
+        "set_count": len(set_indices),
+        "variables": variables,
+        "statistics": {
+            "largest_final_width": max(final_widths),
+            "average_final_width": (
+                sum(final_widths) / len(final_widths)
+            ),
+            "smallest_final_width": min(final_widths),
+            "widest_final_variable": (
+                widest_final_variable["name"]
+            ),
+            "narrowest_final_variable": (
+                narrowest_final_variable["name"]
+            ),
+            "largest_width_overall": max(all_widths),
+            "average_width_overall": (
+                sum(all_widths) / len(all_widths)
+            )
+        }
     }
 
 

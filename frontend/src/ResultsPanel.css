@@ -39,3 +39,50 @@
     width: 60px;
 }
 
+.set-results-section {
+    margin-top: 16px;
+}
+
+.set-results-section > h2 {
+    margin-bottom: 20px;
+    color: #172033;
+    font-size: 1.35rem;
+    text-align: left;
+}
+
+.results-error-panel {
+    margin-top: 24px;
+    padding: 22px;
+
+    background-color: #fff7ed;
+    border: 1px solid #fdba74;
+    border-radius: 14px;
+
+    text-align: left;
+}
+
+.results-error-panel h2 {
+    margin-top: 0;
+    color: #9a3412;
+}
+
+.results-error-output {
+    max-height: 280px;
+    margin-top: 18px;
+    padding: 16px;
+    overflow: auto;
+
+    background-color: #172033;
+    border-radius: 8px;
+
+    color: #f8fafc;
+    font-size: 0.85rem;
+    text-align: left;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 800px) {
+    .set-summary-row {
+        flex-direction: column;
+    }
+}
