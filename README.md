@@ -149,9 +149,9 @@ python3 -m venv .venv
 
 Planned future improvements include:
 
-- Better visualization of results
+- ~~Better visualization of results~~
 - Progress report during verification
-- Button lockout while tool is currently running
+- ~~Button lockout while tool is currently running~~
 - Options to run various tool types (linear, hybrid, etc)
 - Improved error reporting
 
