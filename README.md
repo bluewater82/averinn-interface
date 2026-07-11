@@ -64,7 +64,7 @@ New features are being added as part of ongoing research into improving the usab
 
 ![properties](./media/settingsScreen.png)
 
-![results](./media/resultsScreen.png)
+![results](./media/averinnResults4.jpg)
 
 ## How to Run
 
