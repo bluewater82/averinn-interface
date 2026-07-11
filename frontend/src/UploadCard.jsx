@@ -34,7 +34,9 @@ function UploadCard({
                     onChange={(e) => onFormatChange(e.target.value)}
                 >
                     {formatOptions.map((option) => (
-                        <option key={option}>{option}</option>
+                        <option key={option} value={option}>
+                            {option}
+                        </option>
                     ))}
                 </select>
             </div>

@@ -14,6 +14,7 @@ function App() {
     const [backendStatus, setBackendStatus] = useState(null);
 
     const [settings, setSettings] = useState({
+        nnFormat: "ONNX",
         probType: "SAFETY",
         absRequired: "NO",
         numOfAbsNodes: 75,
@@ -29,7 +30,6 @@ function App() {
     const [verificationType, setVerificationType] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
 
-    const [networkFormat, setNetworkFormat] = useState("ONNX");
     const [networkFile, setNetworkFile] = useState(null);
 
     const [propertyType, setPropertyType] = useState("VNNLIB");
@@ -66,7 +66,6 @@ function App() {
 
             formData.append("settings", JSON.stringify({
                 ...settings,
-                nnformat: networkFormat,
                 specformat: propertyType
             }));
 
@@ -137,9 +136,14 @@ function App() {
                                 <UploadCard
                                     title="Neural Network"
                                     formatLabel="Format"
-                                    formatValue={networkFormat}
-                                    formatOptions={["ONNX", "SHERLOCK", "NNET"]}
-                                    onFormatChange={setNetworkFormat}
+                                    formatValue={settings.nnFormat}
+                                    formatOptions={["ONNX", "SHERLOCK", "ISHERLOCK","NNET"]}
+                                    onFormatChange={(newFormat) =>
+                                        setSettings((previousSettings) => ({
+                                            ...previousSettings,
+                                            nnFormat: newFormat,
+                                        }))
+                                    }
                                     fileLabel="Model file"
                                     file={networkFile}
                                     onFileChange={setNetworkFile}

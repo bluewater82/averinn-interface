@@ -144,11 +144,15 @@ python3 -m venv .venv
 - Select verification type
   - Note: only dynamic and non-dynamic verifications are active, more modes are being implemented
 - Upload your desired network file and specifications sheet (and dynamics file, if applicable) before advancing
+- Configure analysis options for the verification run
+- Click "Start Verification" to run the tool with your selected settings and network file
 
 ## Future Development
 
 Planned future improvements include:
 
+- Rework "Selected Inputs" to reflect actual uploads
+- Add model visualizer to upload card
 - ~~Better visualization of results~~
 - Progress report during verification
 - ~~Button lockout while tool is currently running~~

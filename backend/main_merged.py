@@ -256,6 +256,7 @@ def validate_extension(file: UploadFile, allowed_extensions: set[str]):
 
 # Settings expected from the frontend when running a standard NN verification
 class NNVerificationSettings(BaseModel):
+    nnFormat: str
     probType: str
     absRequired: str
     numOfAbsNodes: int
@@ -268,6 +269,7 @@ class NNVerificationSettings(BaseModel):
 
 # Settings expected from the frontend when running NNCS verification
 class NNCSVerificationSettings(BaseModel):
+    nnFormat: str
     probType: str
     absRequired: str
     numOfAbsNodes: int
@@ -398,7 +400,7 @@ def build_nn_config(
     config.optionxform = str
 
     config["settings"] = {
-        "nnformat": '"ONNX"',
+        "nnformat": f'"{settings.nnFormat}"',
         "nnpath": f'"{network_path}"',
         "specpath": f'"{property_path}"',
 
@@ -431,7 +433,7 @@ def build_nncs_config(
     config.optionxform = str
 
     config["settings"] = {
-    "nnformat": '"ONNX"',
+    "nnformat": f'"{settings.nnFormat}"',
     "nnpath": f'"{network_path}"',
     "dynpath": f'"{dyn_path}"',
     "specpath": f'"{property_path}"',
