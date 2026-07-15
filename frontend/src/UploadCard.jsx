@@ -21,7 +21,8 @@ function UploadCard({
     onFileChange,
     acceptedFileTypes,
     primaryButtonText,
-    secondaryButtonText
+    secondaryButtonText,
+    onPrimaryButtonClick
 }) {
 
     /**
@@ -82,7 +83,10 @@ function UploadCard({
             </div>
 
             <div className="upload-actions">
-                <button className="btn btn-outline-primary">
+                <button className="btn btn-outline-primary"
+                    onClick={onPrimaryButtonClick}
+                    disabled={!file}
+                >
                     {primaryButtonText}
                 </button>
 

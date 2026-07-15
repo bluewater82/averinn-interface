@@ -15,6 +15,7 @@ import SettingsSection from "./SettingsSection";
 import UploadCard from "./UploadCard";
 import ResultsPanel from "./ResultsPanel";
 import VerifTypePanel from "./VerifTypePanel.jsx";
+import FilePreview from "./FilePreview";
 
 // Simulink-specific workflow
 import Simulink from "./simulink/Simulink.jsx";
@@ -107,6 +108,11 @@ function App() {
         setCurrentType: setVerificationType
     };
 
+    // State trackers for file previews
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewFile, setPreviewFile] = useState(null);
+    const [previewTitle, setPreviewTitle] = useState("");
+
     // ============================================================================
     // Workflow reset and nav helpers
     // ============================================================================
@@ -155,6 +161,13 @@ function App() {
         }
 
         return "";
+    }
+
+    // Helper function for uploaded file preview
+    function openPreview(file, title) {
+        setPreviewFile(file);
+        setPreviewTitle(title);
+        setPreviewOpen(true);
     }
 
     // Takes user to Step 3 (Settings page) after Step 2 (Upload page)
@@ -477,6 +490,12 @@ function App() {
                                     onFileChange={setPropertyFile}
                                     acceptedFileTypes=".vnnlib"
                                     primaryButtonText="View Property"
+                                    onPrimaryButtonClick={() =>
+                                        openPreview(
+                                            propertyFile,
+                                            "Property Specification"
+                                        )
+                                    }
                                     secondaryButtonText="Validate Property"
                                 />
                             </div>
@@ -487,12 +506,8 @@ function App() {
                                     <UploadCard
                                         title={dynamicsCard.title}
                                         formatLabel="Format"
-                                        formatValue={
-                                            dynamicsCard.formatValue
-                                        }
-                                        formatOptions={
-                                            dynamicsCard.formatOptions
-                                        }
+                                        formatValue={dynamicsCard.formatValue}
+                                        formatOptions={dynamicsCard.formatOptions}
                                         onFormatChange={() => {}}
                                         fileLabel="Dynamics file"
                                         file={dynamicsFile}
@@ -502,6 +517,12 @@ function App() {
                                         }
                                         primaryButtonText={
                                             dynamicsCard.primaryButtonText
+                                        }
+                                        onPrimaryButtonClick={() =>
+                                            openPreview(
+                                                dynamicsFile,
+                                                dynamicsCard.title
+                                            )
                                         }
                                         secondaryButtonText={
                                             dynamicsCard.secondaryButtonText
@@ -625,6 +646,16 @@ function App() {
                     </section>
                 )}
             </div>
+
+            {/* ============================================================
+                    Uploaded File Preview
+                ============================================================ */}
+                <FilePreview
+                    file={previewFile}
+                    title={previewTitle}
+                    isOpen={previewOpen}
+                    onClose={() => setPreviewOpen(false)}
+                />
         </slContext.Provider>
     );
 }
