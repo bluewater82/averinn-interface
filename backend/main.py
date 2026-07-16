@@ -265,49 +265,6 @@ def resolve_tool_script(filename: str) -> Path:
     )
 
 
-def remove_stale_artifacts() -> None:
-    """
-    Remove output files left by earlier local verification runs.
-
-    This prevents a failed run from accidentally returning an old result.
-    """
-
-    candidates = [
-        PROJECT_ROOT / "data.csv",
-        PROJECT_ROOT / "log.txt",
-        PROJECT_ROOT / "model.lp",
-        PROJECT_ROOT / "model.sol",
-        PROJECT_ROOT / "AVERINN" / "data.csv",
-        PROJECT_ROOT / "AVERINN" / "log.txt",
-        PROJECT_ROOT / "AVERINN" / "model.lp",
-        PROJECT_ROOT / "AVERINN" / "model.sol",
-    ]
-
-    for candidate in candidates:
-        remove_file_if_present(
-            candidate
-        )
-
-
-def find_generated_artifact(
-    filename: str,
-) -> Path:
-    """
-    Return the most likely location for an AVERINN output artifact.
-    """
-
-    candidates = [
-        PROJECT_ROOT / filename,
-        PROJECT_ROOT / "AVERINN" / filename,
-    ]
-
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-
-    return candidates[0]
-
-
 def extract_safety_result(
     log_path: Path,
 ) -> str | None:
@@ -832,8 +789,6 @@ async def run_nn_averinn(
         "nn-averinn.py"
     )
 
-    remove_stale_artifacts()
-
     with TemporaryDirectory(
         prefix="averinn_nn_"
     ) as temporary_directory:
@@ -893,11 +848,11 @@ async def run_nn_averinn(
                 detail="NN verification exceeded the 300-second timeout.",
             ) from error
 
-    return build_verification_response(
-        completed,
-        includes_initial_set=False,
-        output_dir=run_dir,
-    )
+        return build_verification_response(
+            completed,
+            includes_initial_set=False,
+            output_dir=run_dir,
+        )
 
 
 @app.post("/run-nncs-averinn")
@@ -942,8 +897,6 @@ async def run_nncs_averinn(
     script_path = resolve_tool_script(
         "nncs-averinn.py"
     )
-
-    remove_stale_artifacts()
 
     with TemporaryDirectory(
         prefix="averinn_nncs_"
@@ -1012,11 +965,11 @@ async def run_nncs_averinn(
                 detail="NNCS verification exceeded the 300-second timeout.",
             ) from error
 
-    return build_verification_response(
-        completed,
-        includes_initial_set=True,
-        output_dir=run_dir,
-    )
+        return build_verification_response(
+            completed,
+            includes_initial_set=True,
+            output_dir=run_dir,
+        )
 
 
 @app.post("/run-hybrid-averinn")
@@ -1071,8 +1024,6 @@ async def run_hybrid_averinn(
     script_path = resolve_tool_script(
         "hybrid-nncs-averinn.py"
     )
-
-    remove_stale_artifacts()
 
     with TemporaryDirectory(
         prefix="averinn_hybrid_"
@@ -1141,11 +1092,11 @@ async def run_hybrid_averinn(
                 detail="Hybrid verification exceeded the 300-second timeout.",
             ) from error
 
-    return build_verification_response(
-        completed,
-        includes_initial_set=True,
-        output_dir=run_dir,
-    )
+        return build_verification_response(
+            completed,
+            includes_initial_set=True,
+            output_dir=run_dir,
+        )
 
 
 # ==========================================================
