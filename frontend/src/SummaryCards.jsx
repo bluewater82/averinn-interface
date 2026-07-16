@@ -28,7 +28,14 @@ function SummaryCards({ backendStatus }) {
                 <SummaryCard
                     label="State Variables"
                     value={summary?.variable_count ?? "—"}
-                    detail={`${summary?.set_count ?? 0} reachable sets`}
+                    detail={
+                        summary?.initial_set_count
+                            ? (
+                                `${summary.computed_reachable_set_count} computed sets · ` +
+                                `${summary.total_set_count} total with initial`
+                            )
+                            : `${summary?.computed_reachable_set_count ?? 0} computed sets`
+                    }
                 />
 
                 <SummaryCard

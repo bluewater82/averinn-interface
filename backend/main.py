@@ -337,6 +337,7 @@ def extract_safety_result(
 
 def summarize_csv(
     csv_path: Path,
+    includes_initial_set: bool,
 ) -> dict[str, Any] | None:
     """
     Convert an AVERINN CSV into the semantic results model used by React.
@@ -351,6 +352,9 @@ def summarize_csv(
     for compatibility with the existing Results components.
     """
 
+    if not set_indices:
+        return None
+    
     if not csv_path.exists():
         return None
 
@@ -385,6 +389,18 @@ def summarize_csv(
             )
         )
     })
+
+    initial_set_count = (
+        1
+        if includes_initial_set and set_indices
+        else 0
+    )
+
+    computed_reachable_set_count = (
+        len(set_indices) - initial_set_count
+    )
+
+    total_set_count = len(set_indices)
 
     if not set_indices:
         return None
@@ -562,7 +578,9 @@ def summarize_csv(
 
     return {
         "variable_count": len(variables),
-        "set_count": len(set_indices),
+        "initial_set_count": initial_set_count,
+        "computed_reachable_set_count": (computed_reachable_set_count),
+        "total_set_count": total_set_count,
         "variables": variables,
         "statistics": {
             "largest_final_width": max(
@@ -594,6 +612,7 @@ def summarize_csv(
 
 def build_verification_response(
     completed: subprocess.CompletedProcess[str],
+    includes_initial_set: bool,
 ) -> dict[str, Any]:
     """
     Normalize the result returned by NN, NNCS, and Hybrid verification.
@@ -613,7 +632,8 @@ def build_verification_response(
     )
 
     csv_summary = summarize_csv(
-        csv_path
+        csv_path,
+        includes_initial_set,
     )
 
     safety_result = extract_safety_result(
@@ -881,7 +901,8 @@ async def run_nn_averinn(
             ) from error
 
     return build_verification_response(
-        completed
+        completed,
+        includes_initial_set=False,
     )
 
 
@@ -998,7 +1019,8 @@ async def run_nncs_averinn(
             ) from error
 
     return build_verification_response(
-        completed
+        completed,
+        includes_initial_set=True,
     )
 
 
@@ -1125,7 +1147,8 @@ async def run_hybrid_averinn(
             ) from error
 
     return build_verification_response(
-        completed
+        completed,
+        includes_initial_set=True,
     )
 
 
