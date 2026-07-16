@@ -351,9 +351,6 @@ def summarize_csv(
     include a final timing row; this function currently preserves that row
     for compatibility with the existing Results components.
     """
-
-    if not set_indices:
-        return None
     
     if not csv_path.exists():
         return None
@@ -389,6 +386,9 @@ def summarize_csv(
             )
         )
     })
+
+    if not set_indices:
+        return None
 
     initial_set_count = (
         1
