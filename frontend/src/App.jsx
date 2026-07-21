@@ -16,6 +16,7 @@ import UploadCard from "./UploadCard";
 import ResultsPanel from "./ResultsPanel";
 import VerifTypePanel from "./VerifTypePanel.jsx";
 import FilePreview from "./FilePreview";
+import NetworkExplorer from "./NetworkExplorer";
 
 // Simulink-specific workflow
 import Simulink from "./simulink/Simulink.jsx";
@@ -114,6 +115,13 @@ function App() {
     const [previewFile, setPreviewFile] = useState(null);
     const [previewTitle, setPreviewTitle] = useState("");
 
+    // State used by the uploaded ONNX Network Explorer.
+    const [networkExplorerOpen, setNetworkExplorerOpen] = useState(false);
+    const [networkSummary, setNetworkSummary] = useState(null);
+    const [networkExplorerError, setNetworkExplorerError] = useState("");
+    const [isLoadingNetwork, setIsLoadingNetwork] = useState(false);
+    const [selectedNetworkLayerId, setSelectedNetworkLayerId] = useState(0);
+
     // ============================================================================
     // Workflow reset and nav helpers
     // ============================================================================
@@ -125,6 +133,11 @@ function App() {
         setNetworkFile(null);
         setPropertyFile(null);
         setDynamicsFile(null);
+        setNetworkExplorerOpen(false);
+        setNetworkSummary(null);
+        setNetworkExplorerError("");
+        setIsLoadingNetwork(false);
+        setSelectedNetworkLayerId(0);
     }
 
     // Handles verification type selection from the VerifTypePanel
@@ -169,6 +182,61 @@ function App() {
         setPreviewFile(file);
         setPreviewTitle(title);
         setPreviewOpen(true);
+    }
+
+
+    /**
+     * Upload the selected ONNX file to the visualization endpoint and open
+     * the explorer with the normalized architecture returned by FastAPI.
+     */
+    async function openNetworkExplorer() {
+        if (!networkFile) return;
+
+        setNetworkExplorerOpen(true);
+        setNetworkSummary(null);
+        setNetworkExplorerError("");
+        setIsLoadingNetwork(true);
+        setSelectedNetworkLayerId(0);
+
+        try {
+            if (!networkFile.name.toLowerCase().endsWith(".onnx")) {
+                throw new Error(
+                    "The Network Explorer currently supports ONNX files only."
+                );
+            }
+
+            const formData = new FormData();
+            formData.append("network_file", networkFile);
+
+            const response = await fetch(
+                `${API_BASE_URL}/visualize-network`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    typeof data.detail === "string"
+                        ? data.detail
+                        : "The backend could not inspect this network."
+                );
+            }
+
+            setNetworkSummary(data);
+            setSelectedNetworkLayerId(data.layers?.[0]?.id ?? 0);
+        } catch (error) {
+            setNetworkExplorerError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to open the Network Explorer."
+            );
+        } finally {
+            setIsLoadingNetwork(false);
+        }
     }
 
     // Takes user to Step 3 (Settings page) after Step 2 (Upload page)
@@ -468,6 +536,7 @@ function App() {
                                             : ".onnx,.nnet,.sherlock,.isherlock"
                                     }
                                     primaryButtonText="View Network"
+                                    onPrimaryButtonClick={openNetworkExplorer}
                                     secondaryButtonText="Validate Network"
                                 />
                             </div>
@@ -656,6 +725,16 @@ function App() {
                     title={previewTitle}
                     isOpen={previewOpen}
                     onClose={() => setPreviewOpen(false)}
+                />
+
+                <NetworkExplorer
+                    isOpen={networkExplorerOpen}
+                    network={networkSummary}
+                    selectedLayerId={selectedNetworkLayerId}
+                    onSelectLayer={setSelectedNetworkLayerId}
+                    isLoading={isLoadingNetwork}
+                    error={networkExplorerError}
+                    onClose={() => setNetworkExplorerOpen(false)}
                 />
         </slContext.Provider>
     );

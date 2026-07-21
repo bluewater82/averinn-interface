@@ -39,18 +39,24 @@ import numpy as np
 
 
 # ==========================================================
-# Optional Simulink / ONNX Dependencies
+# Optional ONNX / Simulink Dependencies
 # ==========================================================
 
 try:
     import onnx
+    from onnx import numpy_helper
     import onnxruntime
-    import simulinkengine as sl
 
     onnxruntime.set_default_logger_severity(3)
 except Exception:
     onnx = None
+    numpy_helper = None
     onnxruntime = None
+
+
+try:
+    import simulinkengine as sl
+except Exception:
     sl = None
 
 
@@ -187,6 +193,28 @@ class NetworkVisualizationResponse(BaseModel):
     layer_count: int
     parameter_count: int
     layers: list[NetworkLayerSummary]
+
+class WeightStatistics(BaseModel):
+    """Summary statistics for one connection's weight matrix"""
+    minimum: float
+    maximum: float
+    mean: float
+    mean_absolute: float
+    maximum_absolute: float
+
+class NetworkConnectionResponse(BaseModel):
+    """Weight and bias data for the connection between two layers"""
+    source_layer_id: int
+    source_layer_name: str
+    destination_layer_id: int
+    destination_layer_name: str
+    activation: str
+    weight_shape: list[int]
+    weights: list[list[float]]
+    biases: list[float]
+    statistics: WeightStatistics
+
+
 # ==========================================================
 # General Helper Functions
 # ==========================================================
@@ -638,19 +666,19 @@ def get_onnx_input_size(model: Any) -> int:
     return int(dimensions[-1])
 
 
-def inspect_feedforward_onnx(
+def extract_feedforward_layers(
     model: Any,
-    filename: str,
-) -> NetworkVisualizationResponse:
+) -> list[dict[str, Any]]:
     """
-    Convert a sequential feed-forward ONNX graph into visualization metadata.
+    Extract normalized dense-layer data from a sequential ONNX network.
 
-    Supported dense-layer patterns:
-        Gemm
-        MatMul -> Add
+    Every returned weight matrix uses the visualization convention:
 
-    ReLU operations are associated with the most recently discovered
-    dense layer.
+        [destination neurons, source neurons]
+
+    Keeping the complete NumPy arrays here allows both the lightweight
+    architecture summary and future connection-detail endpoints to consume
+    the same parsed representation.
     """
 
     initializer_map = {
@@ -668,9 +696,9 @@ def inspect_feedforward_onnx(
                     "Encountered a Gemm operation without a weight matrix."
                 )
 
-            weight = initializer_map.get(node.input[1])
+            stored_weight = initializer_map.get(node.input[1])
 
-            if weight is None or weight.ndim != 2:
+            if stored_weight is None or stored_weight.ndim != 2:
                 raise ValueError(
                     "Unable to read a two-dimensional Gemm weight matrix."
                 )
@@ -681,27 +709,27 @@ def inspect_feedforward_onnx(
                 0,
             )
 
-            if transposed_weight:
-                output_size, input_size = weight.shape
-            else:
-                input_size, output_size = weight.shape
+            # Gemm computes A × B when transB=0 and A × Bᵀ when transB=1.
+            # Normalize both forms to [destination, source].
+            weights = (
+                stored_weight
+                if transposed_weight
+                else stored_weight.T
+            )
 
-            bias_size = 0
+            biases = None
 
             if len(node.input) >= 3:
-                bias = initializer_map.get(node.input[2])
+                stored_bias = initializer_map.get(node.input[2])
 
-                if bias is not None:
-                    bias_size = int(bias.size)
+                if stored_bias is not None:
+                    biases = stored_bias.reshape(-1)
 
             last_dense_layer = {
-                "input_size": int(input_size),
-                "output_size": int(output_size),
-                "weight_shape": [
-                    int(output_size),
-                    int(input_size),
-                ],
-                "bias_size": bias_size,
+                "input_size": int(weights.shape[1]),
+                "output_size": int(weights.shape[0]),
+                "weights": weights,
+                "biases": biases,
                 "activation": "Linear",
             }
 
@@ -713,25 +741,21 @@ def inspect_feedforward_onnx(
                     "Encountered a MatMul operation without a weight matrix."
                 )
 
-            weight = initializer_map.get(node.input[1])
+            stored_weight = initializer_map.get(node.input[1])
 
-            if weight is None or weight.ndim != 2:
+            if stored_weight is None or stored_weight.ndim != 2:
                 raise ValueError(
                     "Unable to read a two-dimensional MatMul weight matrix."
                 )
 
-            # For A × B, B is commonly stored as
-            # [input_neurons, output_neurons].
-            input_size, output_size = weight.shape
+            # MatMul commonly stores B as [source, destination].
+            weights = stored_weight.T
 
             last_dense_layer = {
-                "input_size": int(input_size),
-                "output_size": int(output_size),
-                "weight_shape": [
-                    int(output_size),
-                    int(input_size),
-                ],
-                "bias_size": 0,
+                "input_size": int(weights.shape[1]),
+                "output_size": int(weights.shape[0]),
+                "weights": weights,
+                "biases": None,
                 "activation": "Linear",
             }
 
@@ -748,8 +772,9 @@ def inspect_feedforward_onnx(
             ]
 
             if initializer_inputs:
-                bias = initializer_inputs[0]
-                last_dense_layer["bias_size"] = int(bias.size)
+                last_dense_layer["biases"] = (
+                    initializer_inputs[0].reshape(-1)
+                )
 
         elif (
             node.op_type == "Relu"
@@ -763,6 +788,104 @@ def inspect_feedforward_onnx(
             "The prototype currently supports Gemm and MatMul layers."
         )
 
+    return dense_layers
+
+
+def inspect_network_connection(
+        model: Any,
+        destination_layer_id: int,
+) -> NetworkConnectionResponse:
+    """
+    Build detailed weight and bias data for the one network connection.
+    """
+
+    dense_layers = extract_feedforward_layers(model)
+    dense_layer_count = len(dense_layers)
+
+    if (
+        destination_layer_id < 1
+        or destination_layer_id > dense_layer_count
+    ):
+        raise ValueError(
+            "Destination layer ID must be between "
+            f"1 and {dense_layer_count}."
+        )
+    
+    dense_layer = dense_layers[
+        destination_layer_id - 1
+    ]
+
+    weights = dense_layer["weights"]
+    biases = dense_layer["biases"]
+
+    if biases is not None:
+        biases = biases.reshape(-1)
+
+        if int(biases.size) != int(weights.shape[0]):
+            raise ValueError(
+                "The bias-vector length does not match the "
+                "number of destination neurons."
+            )
+        
+    is_output_layer = (
+        destination_layer_id == dense_layer_count
+    )
+
+    source_layer_id = destination_layer_id - 1
+
+    source_layer_name = (
+        "Input Layer"
+        if source_layer_id == 0
+        else f"Hidden Layer {source_layer_id}"
+    )
+
+    destination_layer_name = (
+        "Output Layer"
+        if is_output_layer
+        else f"Hidden Layer {destination_layer_id}"
+    )
+
+    return NetworkConnectionResponse(
+        source_layer_id=source_layer_id,
+        source_layer_name=source_layer_name,
+        destination_layer_id=destination_layer_id,
+        destination_layer_name=destination_layer_name,
+        activation=dense_layer["activation"],
+        weight_shape=[
+            int(dimension)
+            for dimension in weights.shape
+        ],
+        weights=[
+            [
+                float(value)
+                for value in row
+            ]
+            for row in weights
+        ],
+        biases=(
+            [
+                float(value)
+                for value in biases
+            ]
+            if biases is not None
+            else []
+        ),
+        statistics=WeightStatistics(
+            minimum=float(weights.min()),
+            maximum=float(weights.max()),
+            mean=float(weights.mean()),
+            mean_absolute=float(abs(weights).mean()),
+            maximum_absolute=float(abs(weights).max()),
+        ),
+    )
+
+def inspect_feedforward_onnx(
+    model: Any,
+    filename: str,
+) -> NetworkVisualizationResponse:
+    """Convert a sequential ONNX graph into visualization metadata."""
+
+    dense_layers = extract_feedforward_layers(model)
     input_size = get_onnx_input_size(model)
 
     layers = [
@@ -782,17 +905,21 @@ def inspect_feedforward_onnx(
         start=1,
     ):
         is_output_layer = position == total_dense_layers
+        weights = dense_layer["weights"]
+        biases = dense_layer["biases"]
 
-        weight_count = (
-            dense_layer["weight_shape"][0]
-            * dense_layer["weight_shape"][1]
+        weight_shape = [
+            int(dimension)
+            for dimension in weights.shape
+        ]
+
+        bias_size = (
+            int(biases.size)
+            if biases is not None
+            else 0
         )
 
-        parameter_count = (
-            weight_count
-            + dense_layer["bias_size"]
-        )
-
+        parameter_count = int(weights.size) + bias_size
         total_parameters += parameter_count
 
         layers.append(
@@ -810,10 +937,10 @@ def inspect_feedforward_onnx(
                 ),
                 size=dense_layer["output_size"],
                 activation=dense_layer["activation"],
-                weight_shape=dense_layer["weight_shape"],
+                weight_shape=weight_shape,
                 bias_shape=(
-                    [dense_layer["bias_size"]]
-                    if dense_layer["bias_size"] > 0
+                    [bias_size]
+                    if bias_size > 0
                     else None
                 ),
                 parameter_count=parameter_count,
@@ -827,6 +954,7 @@ def inspect_feedforward_onnx(
         parameter_count=total_parameters,
         layers=layers,
     )
+
 
 
 def build_verification_response(
@@ -1837,6 +1965,78 @@ async def visualize_network(
         remove_file_if_present(
             temporary_path
         )
+
+
+@app.post(
+        "/visualize-network/connection",
+        response_model=NetworkConnectionResponse,
+)
+async def visualize_network_connection(
+    network_file: UploadFile = File(...),
+    destination_layer_id: int = Form(...),
+) -> NetworkConnectionResponse:
+    """
+    Return the weights, biases, and statistics for on conneciton
+    in an uploaded feed-forward ONNX network.
+    """
+
+    if onnx is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "ONNX support is unavailable because the required "
+                "dependencies are not installed."
+            ),
+        )
+    
+    filename = network_file.filename or ""
+
+    if not filename.lower().endswith(".onnx"):
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded network must be an ONNX file."
+        )
+    
+    temporary_path: Path | None = None
+
+    try:
+        with NamedTemporaryFile(
+            suffix=".onnx",
+            delete=False,
+        ) as temporary_file:
+            temporary_path = Path(temporary_file.name)
+
+            while chunk := await network_file.read(1024 * 1024):
+                temporary_file.write(chunk)
+
+        model = onnx.load(str(temporary_path))
+        onnx.checker.check_model(model)
+
+        return inspect_network_connection(
+            model=model,
+            destination_layer_id=destination_layer_id,
+        )
+    
+    except ValueError as error:
+        raise
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Unable to inspect this network connection: "
+                f"{error}"
+            ),
+        ) from error
+    
+    finally:
+        await network_file.close()
+
+        if (
+            temporary_path is not None
+            and temporary_path.exists()
+        ):
+            temporary_path.unlink()
 
 
 @app.get("/slxplt")
