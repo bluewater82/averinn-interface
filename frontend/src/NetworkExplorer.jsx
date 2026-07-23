@@ -414,8 +414,27 @@ function ConnectionSummary({ connection }) {
 }
 
 function WeightHeatmap({ connection }) {
+    const [selectedCell, setSelectedCell] = useState(null);
+
     const maximumAbsolute =
         connection.statistics.maximum_absolute || 1;
+
+    useEffect(() => {
+        setSelectedCell(null);
+    }, [connection.destination_layer_id]);
+
+    function selectWeight(
+        weight,
+        destinationIndex,
+        sourceIndex
+    ) {
+        setSelectedCell({
+            weight,
+            destinationIndex,
+            sourceIndex,
+            bias: connection.biases[destinationIndex] ?? null
+        });
+    }
 
     return (
         <section className="network-weight-panel">
@@ -424,6 +443,7 @@ function WeightHeatmap({ connection }) {
                     <p className="network-connection-eyebrow">
                         Weight matrix
                     </p>
+
                     <h3>
                         Destination neurons × source neurons
                     </h3>
@@ -441,53 +461,201 @@ function WeightHeatmap({ connection }) {
                 </div>
             </div>
 
-            <div className="network-heatmap-scroll">
-                <div
-                    className="network-heatmap"
-                    style={{
-                        gridTemplateColumns:
-                            `repeat(${connection.weight_shape[1]}, 28px)`
-                    }}
-                    role="grid"
-                    aria-label={
-                        `Weight matrix from ` +
-                        `${connection.source_layer_name} to ` +
-                        `${connection.destination_layer_name}`
-                    }
-                >
-                    {connection.weights.flatMap(
-                        (row, destinationIndex) =>
-                            row.map((weight, sourceIndex) => (
-                                <div
-                                    key={
-                                        `${destinationIndex}-${sourceIndex}`
-                                    }
-                                    className="network-weight-cell"
-                                    style={{
-                                        backgroundColor: getWeightColor(
-                                            weight,
-                                            maximumAbsolute
-                                        )
-                                    }}
-                                    title={
-                                        `W[${destinationIndex}, ` +
-                                        `${sourceIndex}] = ` +
-                                        `${weight.toFixed(6)}`
-                                    }
-                                    role="gridcell"
-                                    aria-label={
-                                        `Destination neuron ` +
-                                        `${destinationIndex}, source neuron ` +
-                                        `${sourceIndex}, weight ` +
-                                        `${weight.toFixed(6)}`
-                                    }
-                                />
-                            ))
-                    )}
+            <div className="network-weight-statistics">
+                <WeightStatistic
+                    label="Minimum"
+                    value={connection.statistics.minimum}
+                />
+
+                <WeightStatistic
+                    label="Maximum"
+                    value={connection.statistics.maximum}
+                />
+
+                <WeightStatistic
+                    label="Mean"
+                    value={connection.statistics.mean}
+                />
+
+                <WeightStatistic
+                    label="Mean absolute"
+                    value={connection.statistics.mean_absolute}
+                />
+            </div>
+
+            <div className="network-heatmap-layout">
+                <div className="network-heatmap-scroll">
+                    <div
+                        className="network-heatmap"
+                        style={{
+                            gridTemplateColumns:
+                                `repeat(${
+                                    connection.weight_shape[1]
+                                }, 28px)`
+                        }}
+                        role="grid"
+                        aria-label={
+                            `Weight matrix from ` +
+                            `${connection.source_layer_name} to ` +
+                            `${connection.destination_layer_name}`
+                        }
+                    >
+                        {connection.weights.flatMap(
+                            (row, destinationIndex) =>
+                                row.map((weight, sourceIndex) => {
+                                    const isSelected =
+                                        selectedCell?.destinationIndex
+                                            === destinationIndex
+                                        && selectedCell?.sourceIndex
+                                            === sourceIndex;
+
+                                    return (
+                                        <button
+                                            type="button"
+                                            key={
+                                                `${destinationIndex}-` +
+                                                `${sourceIndex}`
+                                            }
+                                            className={
+                                                "network-weight-cell " +
+                                                (
+                                                    isSelected
+                                                        ? "network-weight-cell--selected"
+                                                        : ""
+                                                )
+                                            }
+                                            style={{
+                                                backgroundColor:
+                                                    getWeightColor(
+                                                        weight,
+                                                        maximumAbsolute
+                                                    )
+                                            }}
+                                            title={
+                                                `W[${destinationIndex}, ` +
+                                                `${sourceIndex}] = ` +
+                                                `${weight.toFixed(6)}`
+                                            }
+                                            onClick={() =>
+                                                selectWeight(
+                                                    weight,
+                                                    destinationIndex,
+                                                    sourceIndex
+                                                )
+                                            }
+                                            role="gridcell"
+                                            aria-pressed={isSelected}
+                                            aria-label={
+                                                `Destination neuron ` +
+                                                `${destinationIndex}, ` +
+                                                `source neuron ` +
+                                                `${sourceIndex}, weight ` +
+                                                `${weight.toFixed(6)}`
+                                            }
+                                        />
+                                    );
+                                })
+                        )}
+                    </div>
                 </div>
+
+                <WeightSelection
+                    selectedCell={selectedCell}
+                />
             </div>
         </section>
     );
+}
+
+function WeightStatistic({ label, value }) {
+    return (
+        <div>
+            <span>{label}</span>
+            <strong>{formatDecimal(value)}</strong>
+        </div>
+    );
+}
+
+function WeightSelection({ selectedCell }) {
+    if (!selectedCell) {
+        return (
+            <aside className="network-weight-selection">
+                <p className="network-connection-eyebrow">
+                    Exact value
+                </p>
+
+                <h4>No weight selected</h4>
+
+                <span>
+                    Select a heatmap cell to inspect its weight,
+                    source neuron, destination neuron, and bias.
+                </span>
+            </aside>
+        );
+    }
+
+    const {
+        weight,
+        destinationIndex,
+        sourceIndex,
+        bias
+    } = selectedCell;
+
+    return (
+        <aside className="network-weight-selection">
+            <p className="network-connection-eyebrow">
+                Selected weight
+            </p>
+
+            <h4>
+                W[{destinationIndex}, {sourceIndex}]
+            </h4>
+
+            <dl className="network-selected-weight-facts">
+                <Fact
+                    label="Weight"
+                    value={formatDecimal(weight)}
+                />
+
+                <Fact
+                    label="Source neuron"
+                    value={sourceIndex}
+                />
+
+                <Fact
+                    label="Destination neuron"
+                    value={destinationIndex}
+                />
+
+                <Fact
+                    label={`Bias b[${destinationIndex}]`}
+                    value={
+                        bias === null
+                            ? "—"
+                            : formatDecimal(bias)
+                    }
+                />
+            </dl>
+
+            <p className="network-weight-equation">
+                <code>
+                    z[{destinationIndex}] +=
+                    W[{destinationIndex}, {sourceIndex}]
+                    × a[{sourceIndex}]
+                </code>
+            </p>
+        </aside>
+    );
+}
+
+function formatDecimal(value) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return "—";
+    }
+
+    return numericValue.toFixed(6);
 }
 
 function LayerInspector({ layer }) {
