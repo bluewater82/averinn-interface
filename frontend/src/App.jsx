@@ -735,6 +735,8 @@ function App() {
                     isLoading={isLoadingNetwork}
                     error={networkExplorerError}
                     onClose={() => setNetworkExplorerOpen(false)}
+                    networkFile={networkFile}
+                    apiBaseUrl={API_BASE_URL}
                 />
         </slContext.Provider>
     );

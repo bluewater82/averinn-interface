@@ -11,6 +11,8 @@ import "./NetworkExplorer.css";
 function NetworkExplorer({
     isOpen,
     network,
+    networkFile,
+    apiBaseUrl,
     selectedLayerId,
     onSelectLayer,
     isLoading,
@@ -24,7 +26,9 @@ function NetworkExplorer({
         [network, selectedLayerId]
     );
 
-    const [selectedConnectionID, setSelectedConnectionID] = useState(null);
+    const [selectedConnectionId, setSelectedConnectionId] = useState(null);
+    const [connectionError, setConnectionError] = useState("");
+    const [isLoadingConnection, setIsLoadingConnection] = useState(false);
 
     useEffect(() => {
         if (!isOpen) return undefined;
