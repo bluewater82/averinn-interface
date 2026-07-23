@@ -47,7 +47,66 @@ function NetworkExplorer({
         };
     }, [isOpen, onClose]);
 
+    useEffect(() => {
+        setSelectedConnectionId(null);
+        setConnectionData(null);
+        setConnectionError("");
+        setIsLoadingConnection(false);
+    }, [network]);
+
     if (!isOpen) return null;
+
+    async function inspectConnection(destinationLayerId) {
+        setSelectedConnectionId(destinationLayerId);
+        setConnectionData(null);
+        setConnectionError("");
+
+        if (!networkFile) {
+            setConnectionError(
+                "The original uploaded ONNX file is no longer available."
+            );
+            return;
+        }
+
+        setIsLoadingConnection(true);
+
+        const formData = new FormData();
+
+        formData.append("network_file", networkFile);
+        formData.append(
+            "destination_layer_id",
+            String(destinationLayerId)
+        );
+
+        try {
+            const response = await fetch(
+                `${apiBaseUrl}/visualize-network/connection`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    responseData.detail
+                    || "Unable to inspect this connection."
+                );
+            }
+
+            setConnectionData(responseData);
+        } catch (requestError) {
+            setConnectionError(
+                requestError instanceof Error
+                    ? requestError.message
+                    : "Unable to inspect this connection."
+            );
+        } finally {
+            setIsLoadingConnection(false);
+        }
+    }
 
     return (
         <div className="network-explorer-backdrop" onMouseDown={onClose}>
@@ -151,7 +210,7 @@ function NetworkExplorer({
                                                         === network.layers[index + 1].id
                                                     }
                                                     onSelect={() =>
-                                                        setSelectedConnectionId(
+                                                        inspectConnection(
                                                             network.layers[index + 1].id
                                                         )
                                                     }
@@ -162,6 +221,37 @@ function NetworkExplorer({
                                     </div>
                                 </div>
                             </div>
+
+                            <section
+                                className="network-connection-preview"
+                                aria-live="polite"
+                            >
+                                {!selectedConnectionId && (
+                                    <p className="network-connection-prompt">
+                                        Select an Inspect button between two layers to view
+                                        that connection.
+                                    </p>
+                                )}
+
+                                {isLoadingConnection && (
+                                    <p className="network-connection-status">
+                                        Loading connection data…
+                                    </p>
+                                )}
+
+                                {connectionError && (
+                                    <div
+                                        className="network-connection-error"
+                                        role="alert"
+                                    >
+                                        {connectionError}
+                                    </div>
+                                )}
+
+                                {connectionData && !isLoadingConnection && (
+                                    <ConnectionSummary connection={connectionData} />
+                                )}
+                            </section>
 
                             <LayerInspector layer={selectedLayer} />
                         </div>
@@ -256,6 +346,62 @@ function ConnectionButton({
                 Inspect
             </span>
         </button>
+    );
+}
+
+function ConnectionSummary({ connection }) {
+    const [destinationCount, sourceCount] =
+        connection.weight_shape;
+
+    const weightCount =
+        destinationCount * sourceCount;
+
+    return (
+        <div className="network-connection-summary">
+            <div>
+                <p className="network-connection-eyebrow">
+                    Selected transformation
+                </p>
+
+                <h3>
+                    {connection.source_layer_name}
+                    {" → "}
+                    {connection.destination_layer_name}
+                </h3>
+
+                <p>
+                    <code>z = Wa + b</code>
+                </p>
+            </div>
+
+            <dl className="network-connection-facts">
+                <div>
+                    <dt>Weight matrix</dt>
+                    <dd>
+                        {destinationCount}
+                        {" × "}
+                        {sourceCount}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Weights</dt>
+                    <dd>{weightCount.toLocaleString()}</dd>
+                </div>
+
+                <div>
+                    <dt>Biases</dt>
+                    <dd>
+                        {connection.biases.length.toLocaleString()}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Activation</dt>
+                    <dd>{connection.activation || "Linear"}</dd>
+                </div>
+            </dl>
+        </div>
     );
 }
 
