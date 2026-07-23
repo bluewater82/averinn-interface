@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import "./NetworkExplorer.css";
 
 /**
@@ -415,12 +415,36 @@ function ConnectionSummary({ connection }) {
 
 function WeightHeatmap({ connection }) {
     const [selectedCell, setSelectedCell] = useState(null);
+    const [sourceFilter, setSourceFilter] = useState("all");
+    const [destinationFilter, setDestinationFilter] =
+        useState("all");
 
     const maximumAbsolute =
-        connection.statistics.maximum_absolute || 1;
+        connection.statistics?.maximum_absolute || 1;
+
+    const sourceCount = connection.weight_shape[1];
+    const destinationCount = connection.weight_shape[0];
+
+    const visibleSourceIndices =
+        sourceFilter === "all"
+            ? Array.from(
+                { length: sourceCount },
+                (_, index) => index
+            )
+            : [Number(sourceFilter)];
+
+    const visibleDestinationIndices =
+        destinationFilter === "all"
+            ? Array.from(
+                { length: destinationCount },
+                (_, index) => index
+            )
+            : [Number(destinationFilter)];
 
     useEffect(() => {
         setSelectedCell(null);
+        setSourceFilter("all");
+        setDestinationFilter("all");
     }, [connection.destination_layer_id]);
 
     function selectWeight(
@@ -432,9 +456,31 @@ function WeightHeatmap({ connection }) {
             weight,
             destinationIndex,
             sourceIndex,
-            bias: connection.biases[destinationIndex] ?? null
+            bias:
+                connection.biases?.[destinationIndex]
+                ?? null
         });
     }
+
+    function changeSourceFilter(event) {
+        setSourceFilter(event.target.value);
+        setSelectedCell(null);
+    }
+
+    function changeDestinationFilter(event) {
+        setDestinationFilter(event.target.value);
+        setSelectedCell(null);
+    }
+
+    function clearFilters() {
+        setSourceFilter("all");
+        setDestinationFilter("all");
+        setSelectedCell(null);
+    }
+
+    const filtersAreActive =
+        sourceFilter !== "all"
+        || destinationFilter !== "all";
 
     return (
         <section className="network-weight-panel">
@@ -479,8 +525,73 @@ function WeightHeatmap({ connection }) {
 
                 <WeightStatistic
                     label="Mean absolute"
-                    value={connection.statistics.mean_absolute}
+                    value={
+                        connection.statistics.mean_absolute
+                    }
                 />
+            </div>
+
+            <div className="network-weight-filters">
+                <label>
+                    <span>Source neuron</span>
+
+                    <select
+                        value={sourceFilter}
+                        onChange={changeSourceFilter}
+                    >
+                        <option value="all">
+                            All source neurons
+                        </option>
+
+                        {Array.from(
+                            { length: sourceCount },
+                            (_, sourceIndex) => (
+                                <option
+                                    key={sourceIndex}
+                                    value={sourceIndex}
+                                >
+                                    Source {sourceIndex}
+                                </option>
+                            )
+                        )}
+                    </select>
+                </label>
+
+                <label>
+                    <span>Destination neuron</span>
+
+                    <select
+                        value={destinationFilter}
+                        onChange={changeDestinationFilter}
+                    >
+                        <option value="all">
+                            All destination neurons
+                        </option>
+
+                        {Array.from(
+                            { length: destinationCount },
+                            (_, destinationIndex) => (
+                                <option
+                                    key={destinationIndex}
+                                    value={destinationIndex}
+                                >
+                                    Destination {
+                                        destinationIndex
+                                    }
+                                </option>
+                            )
+                        )}
+                    </select>
+                </label>
+
+                <button
+                    type="button"
+                    className="network-weight-clear"
+                    onClick={clearFilters}
+                    disabled={!filtersAreActive}
+                >
+                    Clear filters
+                </button>
             </div>
 
             <div className="network-heatmap-layout">
@@ -489,8 +600,8 @@ function WeightHeatmap({ connection }) {
                         className="network-heatmap"
                         style={{
                             gridTemplateColumns:
-                                `repeat(${
-                                    connection.weight_shape[1]
+                                `48px repeat(${
+                                    visibleSourceIndices.length
                                 }, 28px)`
                         }}
                         role="grid"
@@ -500,61 +611,122 @@ function WeightHeatmap({ connection }) {
                             `${connection.destination_layer_name}`
                         }
                     >
-                        {connection.weights.flatMap(
-                            (row, destinationIndex) =>
-                                row.map((weight, sourceIndex) => {
-                                    const isSelected =
-                                        selectedCell?.destinationIndex
-                                            === destinationIndex
-                                        && selectedCell?.sourceIndex
-                                            === sourceIndex;
+                        <div
+                            className={
+                                "network-heatmap-corner"
+                            }
+                            aria-hidden="true"
+                        />
 
-                                    return (
-                                        <button
-                                            type="button"
-                                            key={
-                                                `${destinationIndex}-` +
-                                                `${sourceIndex}`
-                                            }
-                                            className={
-                                                "network-weight-cell " +
-                                                (
-                                                    isSelected
-                                                        ? "network-weight-cell--selected"
-                                                        : ""
-                                                )
-                                            }
-                                            style={{
-                                                backgroundColor:
-                                                    getWeightColor(
-                                                        weight,
-                                                        maximumAbsolute
-                                                    )
-                                            }}
-                                            title={
-                                                `W[${destinationIndex}, ` +
-                                                `${sourceIndex}] = ` +
-                                                `${weight.toFixed(6)}`
-                                            }
-                                            onClick={() =>
-                                                selectWeight(
-                                                    weight,
-                                                    destinationIndex,
-                                                    sourceIndex
-                                                )
-                                            }
-                                            role="gridcell"
-                                            aria-pressed={isSelected}
-                                            aria-label={
-                                                `Destination neuron ` +
-                                                `${destinationIndex}, ` +
-                                                `source neuron ` +
-                                                `${sourceIndex}, weight ` +
-                                                `${weight.toFixed(6)}`
-                                            }
-                                        />
-                                    );
-                                })
+                        {visibleSourceIndices.map(
+                            (sourceIndex) => (
+                                <div
+                                    key={
+                                        `source-${sourceIndex}`
+                                    }
+                                    className={
+                                        "network-heatmap-column-label"
+                                    }
+                                    role="columnheader"
+                                    title={
+                                        `Source neuron ` +
+                                        `${sourceIndex}`
+                                    }
+                                >
+                                    {sourceIndex}
+                                </div>
+                            )
+                        )}
+
+                        {visibleDestinationIndices.map(
+                            (destinationIndex) => (
+                                <Fragment
+                                    key={
+                                        `destination-` +
+                                        `${destinationIndex}`
+                                    }
+                                >
+                                    <div
+                                        className={
+                                            "network-heatmap-row-label"
+                                        }
+                                        role="rowheader"
+                                        title={
+                                            `Destination neuron ` +
+                                            `${destinationIndex}`
+                                        }
+                                    >
+                                        {destinationIndex}
+                                    </div>
+
+                                    {visibleSourceIndices.map(
+                                        (sourceIndex) => {
+                                            const weight =
+                                                connection.weights[
+                                                    destinationIndex
+                                                ][sourceIndex];
+
+                                            const isSelected =
+                                                selectedCell
+                                                    ?.destinationIndex
+                                                    === destinationIndex
+                                                && selectedCell
+                                                    ?.sourceIndex
+                                                    === sourceIndex;
+
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={
+                                                        `${destinationIndex}-` +
+                                                        `${sourceIndex}`
+                                                    }
+                                                    className={
+                                                        "network-weight-cell " +
+                                                        (
+                                                            isSelected
+                                                                ? "network-weight-cell--selected"
+                                                                : ""
+                                                        )
+                                                    }
+                                                    style={{
+                                                        backgroundColor:
+                                                            getWeightColor(
+                                                                weight,
+                                                                maximumAbsolute
+                                                            )
+                                                    }}
+                                                    title={
+                                                        `W[` +
+                                                        `${destinationIndex}, ` +
+                                                        `${sourceIndex}] = ` +
+                                                        `${weight.toFixed(6)}`
+                                                    }
+                                                    onClick={() =>
+                                                        selectWeight(
+                                                            weight,
+                                                            destinationIndex,
+                                                            sourceIndex
+                                                        )
+                                                    }
+                                                    role="gridcell"
+                                                    aria-pressed={
+                                                        isSelected
+                                                    }
+                                                    aria-label={
+                                                        `Destination neuron ` +
+                                                        `${destinationIndex}, ` +
+                                                        `source neuron ` +
+                                                        `${sourceIndex}, ` +
+                                                        `weight ` +
+                                                        `${weight.toFixed(6)}`
+                                                    }
+                                                />
+                                            );
+                                        }
+                                    )}
+                                </Fragment>
+                            )
                         )}
                     </div>
                 </div>

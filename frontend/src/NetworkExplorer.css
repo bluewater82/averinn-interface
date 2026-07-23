@@ -589,15 +589,121 @@
 }
 
 .network-heatmap-scroll {
+    width: 100%;
     max-width: 100%;
+    max-height: 390px;
     overflow: auto;
-    padding: 4px;
+    overscroll-behavior: contain;
+    border: 1px solid #dce5ef;
+    border-radius: 10px;
+    background: #f7f9fc;
 }
 
 .network-heatmap {
     width: max-content;
+    min-width: 100%;
     display: grid;
     gap: 3px;
+    padding: 4px;
+}
+
+.network-weight-filters {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: end;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #dce5ef;
+    border-radius: 12px;
+    background: #f7f9fc;
+}
+
+.network-weight-filters label {
+    min-width: 170px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.network-weight-filters label > span {
+    color: #61758b;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.network-weight-filters select {
+    min-height: 38px;
+    padding: 7px 32px 7px 10px;
+    border: 1px solid #b9c9d9;
+    border-radius: 8px;
+    color: #173d61;
+    background: white;
+    font: inherit;
+    font-size: 0.82rem;
+}
+
+.network-weight-filters select:focus-visible {
+    outline: 3px solid rgba(18, 97, 173, 0.25);
+    outline-offset: 1px;
+}
+
+.network-weight-clear {
+    min-height: 38px;
+    padding: 7px 14px;
+    border: 1px solid #8eabc6;
+    border-radius: 8px;
+    color: #174f83;
+    background: white;
+    font-weight: 700;
+}
+
+.network-weight-clear:hover:not(:disabled) {
+    border-color: #397ebd;
+    background: #edf5fd;
+}
+
+.network-weight-clear:disabled {
+    cursor: default;
+    opacity: 0.45;
+}
+
+.network-heatmap-corner,
+.network-heatmap-column-label,
+.network-heatmap-row-label {
+    display: grid;
+    place-items: center;
+    color: #526b85;
+    background: #edf3f8;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.network-heatmap-corner {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: 48px;
+    height: 28px;
+    border-radius: 6px 0 0 0;
+}
+
+.network-heatmap-column-label {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    width: 28px;
+    height: 28px;
+}
+
+.network-heatmap-row-label {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    width: 48px;
+    height: 28px;
 }
 
 .network-weight-cell {
@@ -737,5 +843,13 @@
 @media (max-width: 700px) {
     .network-weight-statistics {
         grid-template-columns: repeat(2, minmax(100px, 1fr));
+    }
+    .network-weight-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .network-weight-filters label {
+        min-width: 0;
     }
 }
